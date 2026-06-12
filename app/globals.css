@@ -1,0 +1,234 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Remixa";
+  src: url("/fonts/remixa-test-cdnfonts/RemixaTest-Regular-BF649a5c12202eb.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Remixa";
+  src: url("/fonts/remixa-test-cdnfonts/RemixaTest-Bold-BF649a5c11cf16c.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --background: #fafafa;
+  --foreground: #0a0a0a;
+  --surface: #ffffff;
+  --surface-muted: #f8fafc;
+  --line: #d8e2dc;
+  --brand: #16a34a;
+  --brand-strong: #0f766e;
+  --font-mono: "Consolas", "Liberation Mono", monospace;
+  --joballa-primary: #0d7377;
+  --joballa-primary-logo: #0e7377;
+  --joballa-jade-3: #e6f7ed;
+  --joballa-jade-5: #c3e9d7;
+  --joballa-muted: #737373;
+  --joballa-border: #e5e5e5;
+  --joballa-card: #ffffff;
+  --joballa-page: #fafafa;
+  --joballa-page-tint: #f9f9f9;
+  --joballa-fg: #0a0a0a;
+  --joballa-sidebar: #ffffff;
+  --joballa-header: #ffffff;
+  --joballa-input-bg: #ffffff;
+  --joballa-dropdown-bg: #ffffff;
+  --joballa-row-hover: rgba(0, 0, 0, 0.05);
+  --joballa-tag-bg: #f5f5f5;
+  --joballa-tag-fg: #404040;
+  --joballa-match: #f9bc06;
+  --joballa-on-primary: #fafafa;
+  --joballa-danger-bg: rgba(239, 68, 68, 0.12);
+  --joballa-danger-fg: #b91c1c;
+  --joballa-danger-border: rgba(185, 28, 28, 0.24);
+  --joballa-warning-bg: #fffbeb;
+  --joballa-warning-fg: #92400e;
+  --joballa-warning-border: #fde68a;
+  --joballa-success-bg: #ecfdf5;
+  --joballa-success-fg: #047857;
+  --joballa-success-border: #a7f3d0;
+  --joballa-info-bg: #eff6ff;
+  --joballa-info-fg: #1d4ed8;
+  --joballa-info-border: #bfdbfe;
+  --joballa-violet-bg: #f5f3ff;
+  --joballa-violet-fg: #6d28d9;
+  --joballa-avatar-bg: #f6e8ef;
+  --joballa-avatar-fg: #9f5575;
+  --joballa-neutral-avatar-bg: #171717;
+  --joballa-neutral-avatar-fg: #ffffff;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --joballa-scrollbar-size: 6px;
+  color-scheme: light;
+}
+
+[data-joballa-theme="dark"] {
+  --background: #0a0a0a;
+  --foreground: #ffffff;
+  --surface: #141414;
+  --surface-muted: #1c1c1c;
+  --line: #262626;
+  --joballa-page: #0a0a0a;
+  --joballa-page-tint: #0f0f0f;
+  --joballa-card: #141414;
+  --joballa-border: #262626;
+  --joballa-muted: #a1a1a1;
+  --joballa-primary: #14a3a8;
+  --joballa-primary-logo: #0e7377;
+  --joballa-jade-3: rgba(20, 163, 168, 0.16);
+  --joballa-jade-5: #7dd3d6;
+  --joballa-fg: #ffffff;
+  --joballa-sidebar: #0a0a0a;
+  --joballa-header: #141414;
+  --joballa-input-bg: #141414;
+  --joballa-dropdown-bg: #1c1c1c;
+  --joballa-row-hover: rgba(255, 255, 255, 0.06);
+  --joballa-tag-bg: #262626;
+  --joballa-tag-fg: #d4d4d4;
+  --joballa-match: #ffb800;
+  --joballa-on-primary: #ffffff;
+  --joballa-danger-bg: rgba(239, 68, 68, 0.2);
+  --joballa-danger-fg: #f87171;
+  --joballa-danger-border: rgba(248, 113, 113, 0.35);
+  --joballa-warning-bg: rgba(245, 158, 11, 0.16);
+  --joballa-warning-fg: #fbbf24;
+  --joballa-warning-border: rgba(251, 191, 36, 0.32);
+  --joballa-success-bg: rgba(16, 185, 129, 0.16);
+  --joballa-success-fg: #6ee7b7;
+  --joballa-success-border: rgba(110, 231, 183, 0.3);
+  --joballa-info-bg: rgba(59, 130, 246, 0.16);
+  --joballa-info-fg: #93c5fd;
+  --joballa-info-border: rgba(147, 197, 253, 0.3);
+  --joballa-violet-bg: rgba(139, 92, 246, 0.16);
+  --joballa-violet-fg: #c4b5fd;
+  --joballa-avatar-bg: rgba(190, 99, 139, 0.2);
+  --joballa-avatar-fg: #f0a8c7;
+  --joballa-neutral-avatar-bg: #e5e5e5;
+  --joballa-neutral-avatar-fg: #171717;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "Consolas", "Liberation Mono", ui-monospace, monospace;
+  --color-joballa-primary: var(--joballa-primary);
+  --color-joballa-border: var(--joballa-border);
+  --color-joballa-muted: var(--joballa-muted);
+  --color-joballa-page-tint: var(--joballa-page-tint);
+  --color-joballa-page: var(--joballa-page);
+  --color-joballa-jade-3: var(--joballa-jade-3);
+  --color-joballa-card: var(--joballa-card);
+  --color-joballa-fg: var(--joballa-fg);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--joballa-muted) 45%, transparent) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: var(--joballa-scrollbar-size);
+  height: var(--joballa-scrollbar-size);
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--joballa-muted) 45%, transparent);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--joballa-muted) 65%, transparent);
+}
+
+.joballa-sidebar-scroll {
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+.font-remixa {
+  font-family: "Remixa", var(--font-sans);
+}
+
+a {
+  text-decoration: none;
+}
+
+::selection {
+  background: rgba(13, 115, 119, 0.2);
+}
+
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+button:disabled,
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.admin-card-eyebrow {
+  color: var(--joballa-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1rem;
+  text-transform: uppercase;
+}
+
+.admin-card-title {
+  color: var(--joballa-fg);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.admin-card-value {
+  color: var(--joballa-fg);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.admin-card-description {
+  color: var(--joballa-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.admin-card-meta {
+  color: var(--joballa-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
