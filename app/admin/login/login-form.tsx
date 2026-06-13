@@ -28,6 +28,9 @@ export function LoginForm() {
     setLoading(false);
   }
 
+  const displayError =
+    error === "Session expired. Please sign in again." ? t("login.sessionExpired") : error;
+
   return (
     <main className="grid min-h-screen bg-[var(--joballa-page)] text-[var(--joballa-fg)] lg:grid-cols-[1fr_492px]">
       <section className="flex items-center justify-center px-5 py-10">
@@ -41,7 +44,7 @@ export function LoginForm() {
           </div>
 
           <form className="space-y-4" onSubmit={handleLogin}>
-            {error ? <ErrorState message={error} /> : null}
+            {displayError ? <ErrorState message={displayError} /> : null}
             <label className="block">
               <span className="mb-2 block text-sm font-medium text-[var(--joballa-muted)]">{t("login.email")}</span>
               <span className={inputWrapClass}>

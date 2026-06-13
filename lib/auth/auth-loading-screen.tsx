@@ -1,9 +1,14 @@
+"use client";
+
 import Image from "next/image";
+import { useTranslation } from "@/lib/i18n";
 
 export function AuthLoadingScreen() {
+  const { t } = useTranslation();
+
   return (
     <div
-      aria-label="Verifying authentication"
+      aria-label={t("common.verifyingAuth")}
       className="grid min-h-screen place-items-center bg-[var(--joballa-page)]"
       role="status"
     >

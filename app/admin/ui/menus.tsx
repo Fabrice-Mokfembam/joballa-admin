@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { LayoutDashboard, MoreHorizontal, Table2 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 import { LoadingButton } from "./states";
 
 const MENU_MIN_WIDTH = 144;
@@ -15,11 +16,13 @@ export function ViewToggle({
   view: "cards" | "table";
   setView: (view: "cards" | "table") => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="inline-flex w-fit rounded-full border border-[var(--joballa-border)] bg-[var(--joballa-card)] p-1">
       <button
         type="button"
-        aria-label="Card view"
+        aria-label={t("common.cardView")}
         className={[
           "grid h-9 w-9 place-items-center rounded-full",
           view === "cards" ? "bg-[var(--joballa-jade-3)] text-[var(--joballa-primary)]" : "text-[var(--joballa-muted)]",
@@ -30,7 +33,7 @@ export function ViewToggle({
       </button>
       <button
         type="button"
-        aria-label="Table view"
+        aria-label={t("common.tableView")}
         className={[
           "grid h-9 w-9 place-items-center rounded-full",
           view === "table" ? "bg-[var(--joballa-jade-3)] text-[var(--joballa-primary)]" : "text-[var(--joballa-muted)]",
@@ -74,6 +77,7 @@ function getMenuPosition(trigger: HTMLButtonElement, menu?: HTMLDivElement | nul
 }
 
 export function MoreMenu({ label, items }: { label: string; items: MoreMenuItem[] }) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
   const [confirmingItem, setConfirmingItem] = useState<MoreMenuItem | null>(null);
@@ -199,7 +203,7 @@ export function MoreMenu({ label, items }: { label: string; items: MoreMenuItem[
 
       {confirmingItem ? (
         <div
-          aria-label="Close delete confirmation"
+          aria-label={t("common.closeConfirmation")}
           className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/55 px-4 py-4"
           onClick={closeConfirmationModal}
         >
@@ -211,12 +215,12 @@ export function MoreMenu({ label, items }: { label: string; items: MoreMenuItem[
             onClick={(event) => event.stopPropagation()}
           >
             <h3 id="action-confirmation-title" className="text-xl font-bold">
-              Confirm {confirmingItem.label.toLowerCase()}
+              {t("common.confirmAction", { action: confirmingItem.label.toLowerCase() })}
             </h3>
             <p className="mt-2 text-sm leading-6 text-[var(--joballa-muted)]">
               {confirmingItem.confirmationDescription ??
-                `Are you sure you want to ${confirmingItem.label.toLowerCase()}?${
-                  confirmingItem.label.toLowerCase().includes("delete") ? " This action cannot be undone." : ""
+                `${t("common.confirmDescription", { action: confirmingItem.label.toLowerCase() })}${
+                  confirmingItem.label.toLowerCase().includes("delete") ? ` ${t("common.cannotUndo")}` : ""
                 }`}
             </p>
             <div className="mt-6 flex justify-end gap-3">
@@ -226,7 +230,7 @@ export function MoreMenu({ label, items }: { label: string; items: MoreMenuItem[
                 disabled={confirming}
                 onClick={closeConfirmationModal}
               >
-                Cancel
+                {t("common.cancel")}
               </button>
               <LoadingButton
                 variant="danger"

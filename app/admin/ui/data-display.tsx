@@ -1,16 +1,26 @@
-import { formatStatusLabel } from "@/lib/api/format";
+"use client";
+
+import { formatStatusLabelWithT } from "@/lib/i18n/use-translated-format";
+import { useTranslation } from "@/lib/i18n";
+
+const DANGER_STATUSES = new Set(["rejected", "flagged", "high", "suspended", "inactive", "closed", "escalated"]);
+const WARNING_STATUSES = new Set([
+  "pending",
+  "pending_review",
+  "under_review",
+  "medium",
+  "waiting_for_user",
+  "resubmission_requested",
+  "open",
+  "in_review",
+]);
 
 export function StatusBadge({ value }: { value: string }) {
-  const label = formatStatusLabel(value);
-  const danger = ["Rejected", "Flagged", "High", "Suspended", "Inactive", "Closed", "Escalated"].includes(label);
-  const warning = [
-    "Pending",
-    "Under review",
-    "Medium",
-    "Waiting for user",
-    "Resubmission requested",
-    "Open",
-  ].includes(label);
+  const { t } = useTranslation();
+  const normalized = value.toLowerCase().replace(/\s+/g, "_");
+  const label = formatStatusLabelWithT(value, t);
+  const danger = DANGER_STATUSES.has(normalized);
+  const warning = WARNING_STATUSES.has(normalized);
 
   return (
     <span

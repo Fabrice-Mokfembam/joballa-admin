@@ -80,7 +80,7 @@ export function mapKyc(raw: any): KycListItem {
   return {
     id: raw.id,
     userId: raw.worker.id,
-    user: raw.worker.fullName,
+    user: raw.worker.fullName?.trim() || raw.worker.email || "Unknown user",
     email: raw.worker.email ?? "",
     phone: raw.worker.phone ?? undefined,
     photoUrl: raw.worker.photoUrl ?? null,
@@ -123,13 +123,39 @@ export function mapDocument(raw: any): DocumentDetail {
   };
 }
 
+function resolveJobDepartment(raw: {
+  departmentId?: string | null;
+  department?: string | { id?: string; name?: string; slug?: string } | null;
+}): { departmentId: string; department: string } {
+  const nested = raw.department;
+  if (nested && typeof nested === "object") {
+    return {
+      departmentId: String(raw.departmentId ?? nested.id ?? ""),
+      department: String(nested.name ?? ""),
+    };
+  }
+  return {
+    departmentId: String(raw.departmentId ?? ""),
+    department: String(nested ?? ""),
+  };
+}
+
 export function mapJob(raw: any): JobDetail {
-  if (raw.departmentId) return raw as JobDetail;
+  const { departmentId, department } = resolveJobDepartment(raw);
+
+  if (raw.departmentId && typeof raw.department === "string") {
+    return raw as JobDetail;
+  }
+
+  if (raw.title && raw.clientId !== undefined) {
+    return { ...raw, departmentId, department } as JobDetail;
+  }
+
   return {
     id: raw.id,
     title: raw.title,
-    departmentId: raw.department.id,
-    department: raw.department.name,
+    departmentId,
+    department,
     clientId: raw.employer.userId,
     client: raw.employer.companyName,
     pay: `${Number(raw.payAmount).toLocaleString()} XAF`,
@@ -175,6 +201,7 @@ export function mapUser(raw: any): PlatformUser {
     role: raw.role,
     email: raw.email ?? "",
     phone: raw.phone ?? undefined,
+    photoUrl: profile.photoUrl ?? raw.photoUrl ?? null,
     status: raw.isActive ? "active" : "suspended",
     joinedAt: raw.createdAt,
     lastActivityAt: raw.createdAt,

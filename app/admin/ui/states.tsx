@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertCircle, Inbox, RefreshCw } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 export function SkeletonBar({ className = "" }: { className?: string }) {
   return (
@@ -24,6 +25,8 @@ export function EmptyState({ title, description }: { title: string; description:
 }
 
 export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  const { t } = useTranslation();
+
   return (
     <div className="rounded-[12px] border border-[var(--joballa-danger-fg)]/25 bg-[var(--joballa-danger-bg)] px-5 py-8 text-center">
       <span className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-[var(--joballa-danger-bg)] text-[var(--joballa-danger-fg)] ring-1 ring-[var(--joballa-danger-fg)]/20">
@@ -37,7 +40,7 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
           onClick={onRetry}
         >
           <RefreshCw size={16} />
-          Try again
+          {t("common.tryAgain")}
         </button>
       ) : null}
     </div>
@@ -45,16 +48,20 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
 }
 
 export function AccessDeniedState({
-  title = "Access denied",
-  description = "Your current permissions do not include access to this page.",
+  title,
+  description,
 }: {
   title?: string;
   description?: string;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="rounded-[12px] border border-[var(--joballa-border)] bg-[var(--joballa-card)] p-8 text-center">
-      <h2 className="text-xl font-bold">{title}</h2>
-      <p className="mt-2 text-sm leading-6 text-[var(--joballa-muted)]">{description}</p>
+      <h2 className="text-xl font-bold">{title ?? t("common.accessDenied")}</h2>
+      <p className="mt-2 text-sm leading-6 text-[var(--joballa-muted)]">
+        {description ?? t("common.accessDeniedDescription")}
+      </p>
     </div>
   );
 }

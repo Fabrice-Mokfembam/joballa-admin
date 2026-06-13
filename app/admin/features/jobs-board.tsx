@@ -7,6 +7,7 @@ import { useAdminRefresh } from "@/lib/admin-refresh";
 import { useAuth } from "@/lib/auth/auth-context";
 import { isAsyncRefreshing, isInitialAsyncLoad, useAsyncData } from "@/lib/hooks/use-async";
 import { useTranslation } from "@/lib/i18n";
+import { resolveDepartmentLabel } from "@/lib/api/format";
 import { FilterSelect, PaginationBar, SearchField, StatusFilterPills } from "../ui";
 import { JobActionModals, getJobMenuItems, getJobPanelActions, type JobActionRequest } from "./jobs/job-action-modals";
 import { JobCard } from "./jobs/job-card";
@@ -74,7 +75,7 @@ export function JobsBoard({
     () =>
       jobs
         .filter((job) => !["draft", "paused"].includes(job.status.toLowerCase()))
-        .filter((job) => departmentFilter === DEPARTMENT_FILTER_ALL || job.department === departmentFilter)
+        .filter((job) => departmentFilter === DEPARTMENT_FILTER_ALL || resolveDepartmentLabel(job.department) === departmentFilter)
         .filter((job) => typeFilter === TYPE_FILTER_ALL || job.availability === typeFilter)
         .sort((left, right) => {
           const comparison = new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
@@ -85,7 +86,10 @@ export function JobsBoard({
 
   const selectedJob = visibleJobs.find((job) => job.id === selectedJobId) ?? null;
   const detail: JobDetail | null = selectedJob as JobDetail | null;
-  const departmentOptions = [t("jobs.allDepartments"), ...Array.from(new Set(jobs.map((job) => job.department)))];
+  const departmentOptions = [
+    t("jobs.allDepartments"),
+    ...Array.from(new Set(jobs.map((job) => resolveDepartmentLabel(job.department)).filter(Boolean))),
+  ];
   const typeOptions = [t("jobs.allJobTypes"), ...Array.from(new Set(jobs.map((job) => job.availability)))];
 
   if (isInitialLoad) {

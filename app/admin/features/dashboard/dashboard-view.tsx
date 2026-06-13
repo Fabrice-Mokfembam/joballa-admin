@@ -241,8 +241,9 @@ function StatusLegend({
 }
 
 type QuickActionDef = {
-  title: string;
-  detail: (data: DashboardData) => string;
+  titleKey: TranslationKey;
+  detailKey: TranslationKey;
+  detailVars?: (data: DashboardData) => Record<string, string>;
   href: string;
   permission?: AdminPermission;
   permissions?: AdminPermission[];
@@ -250,32 +251,34 @@ type QuickActionDef = {
 
 const QUICK_ACTION_DEFS: QuickActionDef[] = [
   {
-    title: "Manage verified jobs",
-    detail: (data) => `${data.jobs?.approvedJobs ?? 0} verified jobs`,
+    titleKey: "dashboard.quickActionManageJobs",
+    detailKey: "dashboard.quickActionVerifiedJobsDetail",
+    detailVars: (data) => ({ count: String(data.jobs?.approvedJobs ?? 0) }),
     href: "/admin/verified-jobs",
     permission: "manage_jobs",
   },
   {
-    title: "Review KYC submissions",
-    detail: (data) => `${data.kyc?.pendingKyc ?? 0} pending review`,
+    titleKey: "dashboard.quickActionReviewKyc",
+    detailKey: "dashboard.quickActionKycDetail",
+    detailVars: (data) => ({ count: String(data.kyc?.pendingKyc ?? 0) }),
     href: "/admin/kyc",
     permission: "verify_kyc",
   },
   {
-    title: "Create profiles",
-    detail: () => "Add a worker or employer profile",
+    titleKey: "dashboard.quickActionCreateProfiles",
+    detailKey: "dashboard.quickActionCreateProfilesDetail",
     href: "/admin/profiles",
     permission: "create_profiles",
   },
   {
-    title: "Add department",
-    detail: () => "Create a new department category",
+    titleKey: "dashboard.quickActionAddDepartment",
+    detailKey: "dashboard.quickActionAddDepartmentDetail",
     href: "/admin/departments",
     permission: "manage_departments",
   },
   {
-    title: "Add admin",
-    detail: () => "Create a new admin account",
+    titleKey: "dashboard.quickActionAddAdmin",
+    detailKey: "dashboard.quickActionAddAdminDetail",
     href: "/admin/admins",
     permission: "manage_admins",
   },
@@ -294,8 +297,8 @@ function QuickActions({ data }: { data: DashboardData }) {
   const { hasPermission } = useAuth();
   const { t } = useTranslation();
   const actions = QUICK_ACTION_DEFS.filter((action) => canAccessQuickAction(action, hasPermission)).map((action) => ({
-    title: action.title,
-    detail: action.detail(data),
+    title: t(action.titleKey),
+    detail: t(action.detailKey, action.detailVars?.(data)),
     href: action.href,
   }));
 
@@ -370,7 +373,7 @@ export function DashboardView() {
   if (loadError || !data) {
     return (
       <ErrorState
-        message={loadError ?? "Failed to load dashboard."}
+        message={loadError ?? t("dashboard.loadError")}
         onRetry={() => {
           reload();
           reloadAnalytics();

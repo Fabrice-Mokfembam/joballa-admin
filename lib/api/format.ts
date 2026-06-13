@@ -45,8 +45,19 @@ export function formatStatusFilter(label: string): string | undefined {
   return aliases[key] ?? STATUS_API_VALUES[key] ?? key;
 }
 
-export function formatJobDepartment(department?: string | null): string {
-  const value = department?.trim();
+export function resolveDepartmentLabel(
+  department?: string | { name?: string | null } | null
+): string {
+  if (department && typeof department === "object") {
+    return department.name?.trim() ?? "";
+  }
+  return department?.trim() ?? "";
+}
+
+export function formatJobDepartment(
+  department?: string | { name?: string | null } | null
+): string {
+  const value = resolveDepartmentLabel(department);
   if (!value || value.toLowerCase() === "live") return OTHER_DEPARTMENT_NAME;
   return value;
 }
@@ -141,10 +152,14 @@ export function formatAuditEntity(log: {
   return formatStatusLabel(log.entityType);
 }
 
-export function formatJobPosterName(client: string, department: string): string {
+export function formatJobPosterName(
+  client: string,
+  department?: string | { name?: string | null } | null
+): string {
   const normalized = client.trim().toLowerCase();
+  const departmentLabel = resolveDepartmentLabel(department);
   if (!client.trim() || normalized === "general" || normalized === "unknown") {
-    return department.trim() || client.trim() || "Unknown poster";
+    return departmentLabel || client.trim() || "Unknown poster";
   }
   return client.trim();
 }

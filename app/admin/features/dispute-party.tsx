@@ -1,9 +1,12 @@
-import { formatRoleLabel } from "@/lib/api/format";
-import type { DisputeParty } from "@/lib/api/types";
+"use client";
 
-function getPartyName(party: DisputeParty | undefined, fallback: string): string {
+import type { DisputeParty } from "@/lib/api/types";
+import { useTranslation } from "@/lib/i18n";
+import { useTranslatedFormat } from "@/lib/i18n/use-translated-format";
+
+function getPartyName(party: DisputeParty | undefined, fallback: string, unknownLabel: string): string {
   if (!party) return fallback.split(" (")[0]?.trim() || fallback;
-  return party.fullName?.trim() || party.email?.trim() || fallback.split(" (")[0]?.trim() || "Unknown";
+  return party.fullName?.trim() || party.email?.trim() || fallback.split(" (")[0]?.trim() || unknownLabel;
 }
 
 export function DisputePartyCell({
@@ -13,7 +16,9 @@ export function DisputePartyCell({
   party?: DisputeParty;
   fallback: string;
 }) {
-  const name = getPartyName(party, fallback);
+  const { t } = useTranslation();
+  const { formatRoleLabel } = useTranslatedFormat();
+  const name = getPartyName(party, fallback, t("disputes.unknownParty"));
   const role = party?.role?.trim();
 
   return (

@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 import { usersApi } from "@/lib/api/admin";
-import { formatRoleLabel } from "@/lib/api/format";
+import { useTranslation } from "@/lib/i18n";
+import { useTranslatedFormat } from "@/lib/i18n/use-translated-format";
 import type { PlatformUser } from "@/lib/api/types";
 import { emitAdminRefresh, useAdminRefresh } from "@/lib/admin-refresh";
 import { EM_DASH } from "@/lib/constants";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useAdminAction } from "@/lib/hooks/use-admin-action";
 import { isAsyncRefreshing, isInitialAsyncLoad, useAsyncData, useMutation } from "@/lib/hooks/use-async";
-import { useTranslation } from "@/lib/i18n";
-import { DataTable, FilterSelect, MoreMenu, PaginationBar, SearchField, StatusBadge, StatusFilterPills } from "../ui";
+import { DataTable, FilterSelect, MoreMenu, PaginationBar, SearchField, StatusBadge, StatusFilterPills, UserAvatar } from "../ui";
 import { DataTableSkeleton } from "../ui/skeletons";
 import { AccessDeniedState, EmptyState, ErrorState } from "../ui/states";
 
@@ -21,6 +21,7 @@ const STATUS_FILTER_VALUES = ["All", "Active", "Suspended"] as const;
 
 export function UsersView() {
   const { t } = useTranslation();
+  const { formatRoleLabel } = useTranslatedFormat();
   const { hasPermission } = useAuth();
   const canManage = hasPermission("users:manage");
   const canRead = hasPermission("users:read");
@@ -77,8 +78,9 @@ export function UsersView() {
   }
 
   const tableRows = visibleUsers.map((user: PlatformUser) => [
-    <span key="name" className="font-semibold">
-      {user.name}
+    <span key="name" className="flex min-w-0 items-center gap-3 font-semibold">
+      <UserAvatar name={user.name} photoUrl={user.photoUrl} size="sm" />
+      <span className="truncate">{user.name}</span>
     </span>,
     formatRoleLabel(user.role),
     user.email,

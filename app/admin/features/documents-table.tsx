@@ -330,7 +330,7 @@ export function DocumentsTable({
 
       {rejectingDocument ? (
         <div
-          aria-label="Close reject document dialog"
+          aria-label={t("documents.closeRejectDialog")}
           className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/55 px-4 py-4"
           onClick={closeRejectModal}
         >

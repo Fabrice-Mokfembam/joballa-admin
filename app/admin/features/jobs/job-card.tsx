@@ -1,8 +1,10 @@
 "use client";
 
-import { formatJobDepartment, formatJobPosterName, formatJobStatusLabel, formatRelativeDate } from "@/lib/api/format";
+import { formatJobDepartment, formatJobPosterName } from "@/lib/api/format";
 import type { JobListItem } from "@/lib/api/types";
 import { MIDDLE_DOT } from "@/lib/constants";
+import { useTranslation } from "@/lib/i18n";
+import { useTranslatedFormat } from "@/lib/i18n/use-translated-format";
 import { MoreMenu } from "../../ui";
 
 export function JobCard({
@@ -16,6 +18,8 @@ export function JobCard({
   onSelect: () => void;
   menuItems?: Array<{ label: string; tone?: "danger"; onClick: () => void | Promise<void | boolean | null> }>;
 }) {
+  const { t } = useTranslation();
+  const { formatRelativeDate, formatJobStatusLabel } = useTranslatedFormat();
   const posterName = formatJobPosterName(job.client, job.department);
   const normalizedStatus = job.status.toLowerCase();
   const issue =
@@ -49,7 +53,7 @@ export function JobCard({
             {formatJobStatusLabel(job.status)}
           </span>
           {menuItems && menuItems.length > 0 ? (
-            <MoreMenu label={`${job.title} actions`} items={menuItems} />
+            <MoreMenu label={t("jobs.actionsFor", { title: job.title })} items={menuItems} />
           ) : null}
         </div>
       </div>
@@ -63,7 +67,7 @@ export function JobCard({
             {formatJobDepartment(job.department)}
           </span>
           <span className="rounded-full border border-[var(--joballa-border)] bg-[var(--joballa-tag-bg)] px-3 py-1 text-sm font-semibold text-[var(--joballa-tag-fg)]">
-            {job.applications} applications
+            {t("jobs.applicationsCount", { count: String(job.applications) })}
           </span>
         </div>
       </div>
@@ -83,7 +87,7 @@ export function JobCard({
       {showIssue ? (
         <div className="mt-4 rounded-[8px] border border-[var(--joballa-warning-border)] bg-[var(--joballa-warning-bg)] px-3 py-2">
           <p className="line-clamp-3 text-sm font-semibold leading-5 text-[var(--joballa-warning-fg)]">
-            Reason: {issue}
+            {t("common.reason")}: {issue}
           </p>
         </div>
       ) : null}

@@ -354,6 +354,7 @@ export type PlatformUser = {
   email: string;
   status: string;
   phone?: string;
+  photoUrl?: string | null;
   joinedAt: string;
   lastActivityAt: string;
 };

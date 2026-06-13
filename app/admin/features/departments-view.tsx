@@ -627,7 +627,7 @@ export function DepartmentAdminModal({
             name="name"
             label={variant === "department" ? t("departments.name") : t("departments.fullName")}
             defaultValue={department?.name ?? admin?.name}
-            placeholder={variant === "department" ? "Joballa Domestic" : "Full name"}
+            placeholder={variant === "department" ? t("departments.namePlaceholder") : t("departments.fullNamePlaceholder")}
             maxLength={variant === "department" ? INPUT_MAX_LENGTH.departmentName : INPUT_MAX_LENGTH.fullName}
             required
           />
@@ -637,7 +637,7 @@ export function DepartmentAdminModal({
               name="email"
               label={t("departments.email")}
               defaultValue={admin?.email ?? department?.email ?? department?.admin}
-              placeholder={variant === "admin" ? "admin@joballa.cm" : "department@joballa.cm"}
+              placeholder={variant === "admin" ? t("departments.adminEmailPlaceholder") : t("departments.departmentEmailPlaceholder")}
               type="email"
               maxLength={INPUT_MAX_LENGTH.email}
               required
@@ -651,19 +651,19 @@ export function DepartmentAdminModal({
             <>
               <label className="grid gap-2 text-sm font-bold">{t("departments.adminRole")}
                 <select name="role" required disabled={admin?.role === "super_admin"} defaultValue={admin?.role ?? "verifier"} className="min-h-12 rounded-[8px] border border-[var(--joballa-border)] bg-[var(--joballa-input-bg)] px-3 font-normal outline-none disabled:opacity-60">
-                  {admin?.role === "super_admin" ? <option value="super_admin">Super admin</option> : null}
-                  <option value="admin_manager">Admin manager</option>
-                  <option value="verifier">Verifier</option>
-                  <option value="support_agent">Support agent</option>
+                  {admin?.role === "super_admin" ? <option value="super_admin">{t("common.superAdmin")}</option> : null}
+                  <option value="admin_manager">{t("common.adminManager")}</option>
+                  <option value="verifier">{t("common.verifier")}</option>
+                  <option value="support_agent">{t("common.supportAgent")}</option>
                 </select>
-                {admin?.role === "super_admin" ? <span className="text-xs font-medium text-[var(--joballa-muted)]">Super admin role is protected.</span> : null}
+                {admin?.role === "super_admin" ? <span className="text-xs font-medium text-[var(--joballa-muted)]">{t("departments.superAdminProtected")}</span> : null}
               </label>
               {mode === "add" || isSuperAdmin ? (
                 <DepartmentAdminField
                   id={`${idPrefix}-password`}
                   name="password"
-                  label={mode === "add" ? "Password (optional)" : "New password (optional)"}
-                  placeholder={mode === "add" ? "Leave blank to use default password" : "Leave blank to keep current password"}
+                  label={mode === "add" ? t("departments.passwordOptional") : t("departments.newPasswordOptional")}
+                  placeholder={mode === "add" ? t("departments.passwordPlaceholderAdd") : t("departments.passwordPlaceholderEdit")}
                   type="password"
                   maxLength={INPUT_MAX_LENGTH.password}
                 />

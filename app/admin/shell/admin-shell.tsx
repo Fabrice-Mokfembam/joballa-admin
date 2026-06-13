@@ -6,7 +6,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Building2,
-  BriefcaseBusiness,
   Check,
   CircleSlash,
   Clock3,
@@ -58,7 +57,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const accountRef = useClickAway<HTMLDivElement>(() => setIsAccountOpen(false));
   const pathname = usePathname();
   const pageTitle = t(getPageTitleKey(pathname));
-  const accountName = user?.name ?? "Admin";
+  const accountName = user?.name ?? t("shell.adminFallback");
   const accountEmail = user?.email ?? "";
   const accountInitials = getInitials(accountName);
   const hasAnyPermission = (...permissions: Parameters<typeof hasPermission>[0][]) =>
@@ -219,7 +218,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     setIsSavingAccount(true);
     try {
       await perform(() => updateMe(body), {
-        success: "Account updated",
+        success: t("shell.accountUpdated"),
         onSuccess: () => {
           setIsAccountSettingsOpen(false);
           setAccountForm({ name: "", currentPassword: "", newPassword: "" });
@@ -234,7 +233,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <div className="h-[100dvh] overflow-hidden bg-[var(--joballa-page)] text-[var(--joballa-fg)]">
       {isSidebarOpen ? (
         <button
-          aria-label="Close sidebar overlay"
+          aria-label={t("shell.closeSidebarOverlay")}
           className="fixed inset-0 z-30 bg-black/30 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
@@ -247,7 +246,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         ].join(" ")}
       >
         <button
-          aria-label="Close sidebar"
+          aria-label={t("shell.closeSidebar")}
           className="absolute right-4 top-4 z-10 grid h-9 w-9 place-items-center rounded-[8px] border border-[var(--joballa-border)] lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         >
@@ -270,7 +269,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             </Link>
             <button
               type="button"
-              aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-label={isSidebarCollapsed ? t("shell.expandSidebar") : t("shell.collapseSidebar")}
               className="hidden h-9 w-9 shrink-0 place-items-center rounded-[8px] text-[var(--joballa-muted)] transition hover:text-[var(--joballa-primary)] lg:grid"
               onClick={toggleSidebarCollapsed}
             >
@@ -458,7 +457,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
       {isLogoutOpen ? (
         <div
-          aria-label="Close log out dialog"
+          aria-label={t("shell.closeLogoutDialog")}
           className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/55 px-4 py-4"
           onClick={() => setIsLogoutOpen(false)}
         >

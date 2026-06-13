@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { AlertCircle, CheckCircle2, X } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 type ToastTone = "success" | "error";
 
@@ -28,6 +29,8 @@ type ToastContextValue = {
 const ToastContext = createContext<ToastContextValue | null>(null);
 
 function ToastViewport({ items, onDismiss }: { items: ToastItem[]; onDismiss: (id: string) => void }) {
+  const { t } = useTranslation();
+
   if (items.length === 0) return null;
 
   return (
@@ -52,7 +55,7 @@ function ToastViewport({ items, onDismiss }: { items: ToastItem[]; onDismiss: (i
           <p className="min-w-0 flex-1 text-sm font-semibold leading-5">{toast.message}</p>
           <button
             type="button"
-            aria-label="Dismiss notification"
+            aria-label={t("common.dismissNotification")}
             className="shrink-0 rounded-full p-1 opacity-70 transition hover:opacity-100"
             onClick={() => onDismiss(toast.id)}
           >

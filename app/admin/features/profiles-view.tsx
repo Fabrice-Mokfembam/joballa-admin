@@ -16,14 +16,14 @@ import {
   X,
 } from "lucide-react";
 import { profilesApi } from "@/lib/api/admin";
-import { formatRoleLabel } from "@/lib/api/format";
 import type { AdminProfile } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useAdminAction } from "@/lib/hooks/use-admin-action";
 import { isAsyncRefreshing, isInitialAsyncLoad, useAsyncData, useMutation } from "@/lib/hooks/use-async";
 import { INPUT_MAX_LENGTH } from "@/lib/constants/input-limits";
 import { useTranslation } from "@/lib/i18n";
-import { FilterSelect, MoreMenu, PaginationBar, StatusFilterPills } from "../ui";
+import { useTranslatedFormat } from "@/lib/i18n/use-translated-format";
+import { FilterSelect, MoreMenu, PaginationBar, StatusFilterPills, UserAvatar } from "../ui";
 import { ProfileCardGridSkeleton } from "../ui/skeletons";
 import { AccessDeniedState, EmptyState, ErrorState, LoadingButton, SkeletonBar } from "../ui/states";
 
@@ -75,28 +75,6 @@ function getAccountStatus(profile: AdminProfile): "Active" | "Suspended" {
   return ["suspended", "inactive", "disabled"].includes(profile.status.toLowerCase()) ? "Suspended" : "Active";
 }
 
-function getInitials(name: string): string {
-  return name.split(" ").filter(Boolean).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
-}
-
-function ProfileAvatar({ profile, size = "card" }: { profile: AdminProfile; size?: "card" | "detail" }) {
-  const classes = size === "detail" ? "h-24 w-24 text-2xl" : "h-16 w-16 text-base";
-  return profile.photoUrl ? (
-    <Image
-      src={profile.photoUrl}
-      alt={profile.name}
-      width={size === "detail" ? 96 : 64}
-      height={size === "detail" ? 96 : 64}
-      className={`${classes} shrink-0 rounded-full object-cover`}
-      unoptimized
-    />
-  ) : (
-    <span className={`grid ${classes} shrink-0 place-items-center rounded-full bg-[var(--joballa-jade-3)] font-bold text-[var(--joballa-primary)]`}>
-      {getInitials(profile.name)}
-    </span>
-  );
-}
-
 function ProfileDetailSkeleton() {
   return (
     <aside className="rounded-[20px] border border-[var(--joballa-border)] bg-[var(--joballa-page-tint)] p-4">
@@ -118,6 +96,7 @@ function ProfileDetailSkeleton() {
 
 export function ProfilesView() {
   const { t } = useTranslation();
+  const { formatRoleLabel } = useTranslatedFormat();
   const { hasPermission, isSuperAdmin, user } = useAuth();
   const { perform } = useAdminAction();
   const canRead = hasPermission("create_profiles");
@@ -392,7 +371,7 @@ export function ProfilesView() {
                 >
                   <div className="flex min-w-0 items-start justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-4">
-                      <ProfileAvatar profile={profile} />
+                      <UserAvatar name={profile.name} photoUrl={profile.photoUrl} size="md" />
                       <div className="min-w-0">
                         <h3 className="flex min-w-0 items-center gap-1.5 text-lg font-semibold tracking-tight">
                           <span className="truncate">{profile.name}</span>
@@ -436,7 +415,7 @@ export function ProfilesView() {
                     <button type="button" aria-label={t("profiles.closeDetails")} className="grid h-10 w-10 place-items-center rounded-full border border-[var(--joballa-border)] text-[var(--joballa-muted)]" onClick={() => setSelectedProfileId(null)}><X size={18} /></button>
                   </div>
                   <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-                    <ProfileAvatar profile={selectedProfile} size="detail" />
+                    <UserAvatar name={selectedProfile.name} photoUrl={selectedProfile.photoUrl} size="lg" />
                     <div className="min-w-0">
                       <h2 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">{selectedProfile.name}{selectedProfile.isVerified ? <BadgeCheck size={22} className="text-[var(--joballa-primary)]" /> : null}</h2>
                       <p className="mt-1 text-sm font-semibold text-[var(--joballa-muted)]">{selectedProfile.position || selectedProfile.companyName || formatRoleLabel(selectedProfile.role)}</p>

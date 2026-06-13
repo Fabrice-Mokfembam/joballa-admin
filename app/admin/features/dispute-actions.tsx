@@ -31,7 +31,7 @@ export function DisputeActionsMenu({
   return (
     <>
       <MoreMenu
-        label={`${report.subject} actions`}
+        label={t("disputes.actionsFor", { subject: report.subject })}
         items={[
           {
             label: t("disputes.resolve"),
@@ -90,7 +90,7 @@ function ResolveDisputeModal({
 
   return (
     <div
-      aria-label="Close resolve dispute dialog"
+      aria-label={t("disputes.closeResolveDialog")}
       className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/55 px-4 py-4"
       onClick={handleClose}
     >

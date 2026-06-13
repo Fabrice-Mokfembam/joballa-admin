@@ -3,13 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Check } from "lucide-react";
 import { adminPermissionsApi } from "@/lib/api/admin";
-import { formatRoleLabel } from "@/lib/api/format";
+import { useTranslation, type TranslationKey } from "@/lib/i18n";
+import { useTranslatedFormat } from "@/lib/i18n/use-translated-format";
 import type { AdminListItem, AdminPermission, AdminRole } from "@/lib/api/types";
 import { emitAdminRefresh } from "@/lib/admin-refresh";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useAdminAction } from "@/lib/hooks/use-admin-action";
 import { isAsyncRefreshing, isInitialAsyncLoad, useAsyncData, useMutation } from "@/lib/hooks/use-async";
-import { useTranslation, type TranslationKey } from "@/lib/i18n";
 import { DataTableSkeleton } from "../ui/skeletons";
 import { AccessDeniedState, EmptyState, ErrorState, LoadingButton } from "../ui/states";
 
@@ -77,6 +77,7 @@ function arePermissionSetsEqual(left: Set<AdminPermission>, right: Set<AdminPerm
 
 export function PermissionsView() {
   const { t } = useTranslation();
+  const { formatRoleLabel } = useTranslatedFormat();
   const { user, hasPermission, refresh } = useAuth();
   const { perform } = useAdminAction();
   const canManagePermissions = hasPermission("admins:manage");
@@ -181,7 +182,7 @@ export function PermissionsView() {
   }
 
   if (isInitialAsyncLoad(loading, adminsResult)) {
-    return <DataTableSkeleton columns={[t("common.name"), t("common.note"), t("common.status"), t("common.actions")]} rows={8} />;
+    return <DataTableSkeleton columns={[t("common.name"), t("common.note"), t("permissions.permissionType"), t("common.actions")]} rows={8} />;
   }
 
   if (error && adminsResult === null) {
@@ -236,7 +237,7 @@ export function PermissionsView() {
           onClick={() => void handleSave()}
           className="min-h-12 w-full rounded-[8px] px-5 sm:w-fit"
         >
-          {t("permissions.savePermissions")}
+          {t("common.save")}
         </LoadingButton>
       </div>
 
@@ -253,7 +254,7 @@ export function PermissionsView() {
           <div className="hidden border-b border-[var(--joballa-border)] bg-[var(--joballa-page-tint)] px-5 py-4 text-xs font-bold uppercase tracking-[0.08em] text-[var(--joballa-muted)] xl:grid xl:grid-cols-[minmax(180px,1fr)_minmax(260px,1.5fr)_160px_170px]">
             <span>{t("common.name")}</span>
             <span>{t("common.note")}</span>
-            <span>{t("common.status")}</span>
+            <span>{t("permissions.permissionType")}</span>
             <span>{t("common.actions")}</span>
           </div>
           {permissionsError ? (
@@ -288,7 +289,7 @@ export function PermissionsView() {
                         : "bg-[var(--joballa-warning-bg)] text-[var(--joballa-warning-fg)]",
                     ].join(" ")}
                   >
-                    {isDefault ? t("common.active") : t("common.pending")}
+                    {isDefault ? t("permissions.default") : t("permissions.custom")}
                   </span>
                   <button
                     type="button"
@@ -306,7 +307,7 @@ export function PermissionsView() {
                     >
                       <Check size={14} strokeWidth={3} />
                     </span>
-                    {assigned ? t("common.approved") : t("common.rejected")}
+                    {assigned ? t("permissions.assigned") : t("permissions.unassigned")}
                   </button>
                 </article>
               );

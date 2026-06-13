@@ -2,12 +2,13 @@
 
 import { createContext, useContext, useMemo, useState } from "react";
 import type { DashboardAnalyticsRange } from "@/lib/api/types";
+import type { TranslationKey } from "@/lib/i18n";
 
-export const DASHBOARD_RANGE_OPTIONS: Array<{ value: DashboardAnalyticsRange; label: string }> = [
-  { value: "7d", label: "Last 7 days" },
-  { value: "30d", label: "Last 30 days" },
-  { value: "90d", label: "Last 90 days" },
-  { value: "1y", label: "Last year" },
+export const DASHBOARD_RANGE_OPTIONS: Array<{ value: DashboardAnalyticsRange; labelKey: TranslationKey }> = [
+  { value: "7d", labelKey: "dashboard.range7d" },
+  { value: "30d", labelKey: "dashboard.range30d" },
+  { value: "90d", labelKey: "dashboard.range90d" },
+  { value: "1y", labelKey: "dashboard.range1y" },
 ];
 
 type DashboardRangeContextValue = {

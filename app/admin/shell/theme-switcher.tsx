@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 import { getSavedTheme } from "./utils";
 
 export function ThemeSwitcher() {
+  const { t } = useTranslation();
   const [theme, setTheme] = useState<"light" | "dark">(() => getSavedTheme());
 
   useEffect(() => {
@@ -30,10 +32,8 @@ export function ThemeSwitcher() {
     <section className="rounded-[8px] border border-[var(--joballa-border)] bg-[var(--joballa-card)] p-5">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h3 className="text-lg font-bold">Theme</h3>
-          <p className="mt-1 text-sm text-[var(--joballa-muted)]">
-            Switch the admin panel between Joballa light and dark colors.
-          </p>
+          <h3 className="text-lg font-bold">{t("shell.theme")}</h3>
+          <p className="mt-1 text-sm text-[var(--joballa-muted)]">{t("shell.themeDescription")}</p>
         </div>
         <div className="inline-flex w-fit rounded-[8px] border border-[var(--joballa-border)] bg-[var(--joballa-page-tint)] p-1">
           <button
@@ -44,7 +44,7 @@ export function ThemeSwitcher() {
             onClick={() => applyTheme("light")}
           >
             <Sun size={16} />
-            Light
+            {t("common.light")}
           </button>
           <button
             className={[
@@ -54,7 +54,7 @@ export function ThemeSwitcher() {
             onClick={() => applyTheme("dark")}
           >
             <Moon size={16} />
-            Dark
+            {t("common.dark")}
           </button>
         </div>
       </div>

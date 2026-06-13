@@ -2,10 +2,12 @@
 
 import { dashboardApi } from "@/lib/api/admin";
 import { useAsyncData } from "@/lib/hooks/use-async";
+import { useTranslation } from "@/lib/i18n";
 import { ErrorState } from "../../ui/states";
 import { StatGridSkeleton } from "../../ui/skeletons";
 
 export function StatGrid() {
+  const { t } = useTranslation();
   const { data, loading, error, reload } = useAsyncData(() => dashboardApi.get(), []);
 
   if (loading) {
@@ -13,7 +15,7 @@ export function StatGrid() {
   }
 
   if (error || !data) {
-    return <ErrorState message={error ?? "Failed to load stats."} onRetry={reload} />;
+    return <ErrorState message={error ?? t("dashboard.statsLoadError")} onRetry={reload} />;
   }
 
   return (

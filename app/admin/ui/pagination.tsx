@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "@/lib/i18n";
+
 export function PaginationBar({
   page,
   totalPages,
@@ -11,6 +13,8 @@ export function PaginationBar({
   total?: number;
   onPageChange: (page: number) => void;
 }) {
+  const { t } = useTranslation();
+
   if (totalPages <= 1) return null;
 
   return (
@@ -21,11 +25,11 @@ export function PaginationBar({
         className="rounded-full border border-[var(--joballa-border)] px-4 py-2 text-sm font-bold disabled:opacity-40"
         onClick={() => onPageChange(Math.max(1, page - 1))}
       >
-        Previous
+        {t("common.previous")}
       </button>
       <span className="text-sm font-semibold text-[var(--joballa-muted)]">
-        Page {page} of {totalPages}
-        {total !== undefined ? ` · ${total} total` : ""}
+        {t("common.pageOf", { page: String(page), totalPages: String(totalPages) })}
+        {total !== undefined ? ` · ${t("common.totalCount", { total: String(total) })}` : ""}
       </span>
       <button
         type="button"
@@ -33,7 +37,7 @@ export function PaginationBar({
         className="rounded-full border border-[var(--joballa-border)] px-4 py-2 text-sm font-bold disabled:opacity-40"
         onClick={() => onPageChange(Math.min(totalPages, page + 1))}
       >
-        Next
+        {t("common.next")}
       </button>
     </div>
   );

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { jobsApi } from "@/lib/api/admin";
-import { isHiddenVerifiedJobStatus } from "@/lib/api/format";
+import { isHiddenVerifiedJobStatus, resolveDepartmentLabel } from "@/lib/api/format";
 import type { JobDetail } from "@/lib/api/types";
 import { useAdminRefresh } from "@/lib/admin-refresh";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -67,7 +67,7 @@ export function VerifiedJobsPanel() {
       jobs
         .filter((job) => !isHiddenVerifiedJobStatus(job.status))
         .filter((job) => matchesVerifiedStatusFilter(job.status, statusFilter))
-        .filter((job) => departmentFilter === "All departments" || job.department === departmentFilter)
+        .filter((job) => departmentFilter === "All departments" || resolveDepartmentLabel(job.department) === departmentFilter)
         .filter((job) => typeFilter === "All job types" || job.availability === typeFilter)
         .sort((left, right) => {
           const comparison = new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
@@ -105,7 +105,7 @@ export function VerifiedJobsPanel() {
         <FilterSelect
           label={t("jobs.departmentFilter")}
           value={departmentFilter === "All departments" ? t("jobs.allDepartments") : departmentFilter}
-          options={[t("jobs.allDepartments"), ...Array.from(new Set(jobs.map((job) => job.department)))]}
+          options={[t("jobs.allDepartments"), ...Array.from(new Set(jobs.map((job) => resolveDepartmentLabel(job.department)).filter(Boolean)))]}
           onChange={(value) => setDepartmentFilter(value === t("jobs.allDepartments") ? "All departments" : value)}
         />
         <FilterSelect

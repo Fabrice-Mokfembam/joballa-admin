@@ -3,6 +3,7 @@
 import type { LucideIcon } from "lucide-react";
 import { CalendarDays, Search } from "lucide-react";
 import { INPUT_MAX_LENGTH } from "@/lib/constants/input-limits";
+import { useTranslation } from "@/lib/i18n";
 
 export function SummaryCards({
   items,
@@ -98,11 +99,13 @@ export function FilterSelect({
 }
 
 export function DateField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const { t } = useTranslation();
+
   return (
     <label className="flex min-h-12 w-full items-center gap-2 rounded-[8px] border border-[var(--joballa-border)] bg-[var(--joballa-input-bg)] px-3 sm:w-auto">
       <CalendarDays size={17} className="text-[var(--joballa-muted)]" />
       <input
-        aria-label="Filter by submitted date"
+        aria-label={t("common.filterByDate")}
         type="date"
         className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-[var(--joballa-fg)] outline-none"
         value={value}

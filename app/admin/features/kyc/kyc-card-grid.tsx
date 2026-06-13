@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Calendar, CheckCircle2, ChevronRight, Expand, FileCheck2, FileX2, Inbox, Mail, Phone, X } from "lucide-react";
 import { kycApi } from "@/lib/api/admin";
-import { formatStatusLabel, formatSubmittedAt, getInitials } from "@/lib/api/format";
+import { formatStatusLabel, formatSubmittedAt } from "@/lib/api/format";
 import type { KycListItem } from "@/lib/api/types";
 import { useAdminRefresh } from "@/lib/admin-refresh";
 import { INPUT_MAX_LENGTH } from "@/lib/constants/input-limits";
@@ -13,6 +13,7 @@ import { useAdminAction } from "@/lib/hooks/use-admin-action";
 import { isAsyncRefreshing, isInitialAsyncLoad, useAsyncData, useMutation } from "@/lib/hooks/use-async";
 import { useTranslation, type TranslationKey } from "@/lib/i18n";
 import { StatusBadge } from "../../ui/data-display";
+import { UserAvatar } from "../../ui/user-avatar";
 import { MoreMenu } from "../../ui/menus";
 import { DateField, FilterSelect, SearchField, SummaryCards } from "../../ui/workspace";
 import { KycCardGridSkeleton } from "../../ui/skeletons";
@@ -341,9 +342,7 @@ export function KycCardGrid({
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[var(--joballa-avatar-bg)] text-sm font-bold text-[var(--joballa-avatar-fg)]">
-                      {getInitials(submission.user)}
-                    </div>
+                    <UserAvatar name={submission.user} photoUrl={submission.photoUrl} size="sm" />
                     <div className="min-w-0">
                       <h3 className="admin-card-title truncate">{submission.user}</h3>
                       <p className="admin-card-meta truncate">{submission.email}</p>
@@ -497,7 +496,7 @@ export function KycCardGrid({
 
       {resubmittingSubmission ? (
         <div
-          aria-label="Close reject KYC dialog"
+          aria-label={t("kyc.closeRejectDialog")}
           className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/55 px-4 py-4"
           onClick={closeResubmitModal}
         >
@@ -543,7 +542,7 @@ export function KycCardGrid({
 
       {statusChangingSubmission ? (
         <div
-          aria-label="Close change KYC status dialog"
+          aria-label={t("kyc.closeChangeStatusDialog")}
           className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/55 px-4 py-4"
           onClick={closeStatusChangeModal}
         >
