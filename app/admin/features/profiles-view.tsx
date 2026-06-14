@@ -4,15 +4,11 @@ import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import {
   BadgeCheck,
-  BriefcaseBusiness,
-  Building2,
   CalendarDays,
   Camera,
   Mail,
   MapPin,
-  Phone,
   Search,
-  UserRound,
   X,
 } from "lucide-react";
 import { profilesApi } from "@/lib/api/admin";
@@ -25,7 +21,8 @@ import { useTranslation } from "@/lib/i18n";
 import { useTranslatedFormat } from "@/lib/i18n/use-translated-format";
 import { FilterSelect, MoreMenu, PaginationBar, StatusFilterPills, UserAvatar } from "../ui";
 import { ProfileCardGridSkeleton } from "../ui/skeletons";
-import { AccessDeniedState, EmptyState, ErrorState, LoadingButton, SkeletonBar } from "../ui/states";
+import { AccessDeniedState, EmptyState, ErrorState, LoadingButton } from "../ui/states";
+import { UserDetailPanel, type UserDetailFields } from "./user-detail-panel";
 
 const PAGE_SIZE = 20;
 const ROLE_FILTER_KEYS = ["common.all", "common.worker", "common.employer"] as const;
@@ -49,13 +46,14 @@ const EMPTY_FORM = {
   name: "",
   email: "",
   phone: "",
-  dateOfBirth: "",
   role: "worker" as "worker" | "employer",
   companyName: "",
   position: "",
   region: "",
   city: "",
   shortBio: "",
+  professionalSummary: "",
+  photoFile: null as File | null,
   photoPreview: "",
 };
 
@@ -75,23 +73,48 @@ function getAccountStatus(profile: AdminProfile): "Active" | "Suspended" {
   return ["suspended", "inactive", "disabled"].includes(profile.status.toLowerCase()) ? "Suspended" : "Active";
 }
 
-function ProfileDetailSkeleton() {
-  return (
-    <aside className="rounded-[20px] border border-[var(--joballa-border)] bg-[var(--joballa-page-tint)] p-4">
-      <section className="rounded-[16px] border border-[var(--joballa-border)] bg-[var(--joballa-card)] p-5">
-        <div className="flex items-center gap-4">
-          <SkeletonBar className="h-24 w-24 rounded-full" />
-          <div className="flex-1">
-            <SkeletonBar className="h-6 w-48" />
-            <SkeletonBar className="mt-3 h-4 w-32" />
-          </div>
-        </div>
-        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {Array.from({ length: 6 }).map((_, index) => <SkeletonBar key={index} className="h-24 rounded-[12px]" />)}
-        </div>
-      </section>
-    </aside>
-  );
+function profileToDetailFields(
+  profile: AdminProfile,
+  t: (key: string, vars?: Record<string, string>) => string,
+  formatRoleLabel: (role: string) => string,
+): UserDetailFields {
+  const accountStatus = getAccountStatus(profile);
+  return {
+    id: profile.id,
+    name: profile.name,
+    email: profile.email,
+    role: profile.role,
+    status: profile.status,
+    phone: profile.phone,
+    photoUrl: profile.photoUrl,
+    headline: profile.position || profile.companyName || formatRoleLabel(profile.role),
+    location: [profile.city, profile.region, profile.country].filter(Boolean).join(", ") || null,
+    isVerified: profile.isVerified,
+    badges: [
+      {
+        label: accountStatus === "Suspended" ? t("common.suspended") : t("common.active"),
+        className:
+          accountStatus === "Suspended"
+            ? "bg-[var(--joballa-danger-bg)] text-[var(--joballa-danger-fg)]"
+            : "bg-[var(--joballa-jade-3)] text-[var(--joballa-primary)]",
+      },
+      {
+        label: t("profiles.verification", { status: formatRoleLabel(profile.status) }),
+      },
+    ],
+    sections: [
+      profile.position ? { title: t("profiles.position"), content: profile.position } : null,
+      profile.companyName ? { title: t("profiles.organizationLabel"), content: profile.companyName } : null,
+      profile.profileViews != null
+        ? { title: t("profiles.profileViews"), content: String(profile.profileViews) }
+        : null,
+      profile.createdBy ? { title: t("profiles.createdBy"), content: profile.createdBy } : null,
+      formatProfileDate(profile.createdAt)
+        ? { title: t("profiles.createdLabel"), content: formatProfileDate(profile.createdAt) ?? "" }
+        : null,
+    ].filter((section): section is { title: string; content: string } => section !== null),
+    bio: profile.shortBio,
+  };
 }
 
 export function ProfilesView() {
@@ -136,9 +159,13 @@ export function ProfilesView() {
       email: form.email.trim(),
       phone: form.phone.trim(),
       locationRegionCity: [form.city.trim(), form.region.trim()].filter(Boolean).join("/"),
-      roleOrPosition: form.role === "worker" ? form.position.trim() || undefined : undefined,
+      roleOrPosition:
+        form.role === "worker"
+          ? form.professionalSummary.trim() || form.position.trim() || undefined
+          : undefined,
       organization: form.role === "employer" ? form.companyName.trim() || undefined : undefined,
       shortBio: form.shortBio.trim() || undefined,
+      profilePhoto: form.photoFile,
     })
   );
   const { mutate: updateProfile, loading: updating } = useMutation((profile: AdminProfile) =>
@@ -168,6 +195,11 @@ export function ProfilesView() {
     return !query || `${profile.name} ${profile.email} ${profile.companyName ?? ""}`.toLowerCase().includes(query);
   });
   const selectedProfile = profiles.find((profile) => profile.id === selectedProfileId) ?? null;
+
+  useEffect(() => {
+    (window as Window & { __adminSelectedProfileUserId?: string | null }).__adminSelectedProfileUserId =
+      selectedProfile?.userId ?? null;
+  }, [selectedProfile?.userId]);
   const totalPages = data?.totalPages ?? 1;
   const isInitialLoad = isInitialAsyncLoad(loading, data);
   const isRefreshing = isAsyncRefreshing(loading, data);
@@ -236,14 +268,30 @@ export function ProfilesView() {
   function handleImageSelection(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
+    setForm((value) => ({ ...value, photoFile: file }));
     const reader = new FileReader();
-    reader.onload = () => setForm((value) => ({ ...value, photoPreview: String(reader.result ?? "") }));
+    reader.onload = () =>
+      setForm((value) => ({ ...value, photoPreview: String(reader.result ?? "") }));
     reader.readAsDataURL(file);
   }
 
   function getProfileActions(profile: AdminProfile) {
     const accountStatus = getAccountStatus(profile);
     return [
+      ...(canManageProfiles && profile.isAdminCreated !== false
+        ? [
+            {
+              label: t("shell.postJob"),
+              onClick: () => {
+                (window as Window & { __adminSelectedProfileUserId?: string | null }).__adminSelectedProfileUserId =
+                  profile.userId;
+                window.dispatchEvent(
+                  new CustomEvent("admin:create-job", { detail: { profileUserId: profile.userId } }),
+                );
+              },
+            },
+          ]
+        : []),
       ...(canManageProfiles && profile.isAdminCreated !== false
         ? [{ label: t("common.edit"), onClick: () => setEditingProfile(profile) }]
         : []),
@@ -382,14 +430,25 @@ export function ProfilesView() {
                         </p>
                       </div>
                     </div>
-                    {profileActions.length > 0 ? <MoreMenu label={t("users.actionsFor", { name: profile.name })} items={profileActions} /> : null}
+                    <div className="flex shrink-0 items-center gap-1.5" onClick={(event) => event.stopPropagation()}>
+                      <span
+                        className={[
+                          "rounded-full px-2 py-0.5 text-[10px] font-bold leading-4",
+                          accountStatus === "Suspended"
+                            ? "bg-[var(--joballa-danger-bg)] text-[var(--joballa-danger-fg)]"
+                            : "bg-[var(--joballa-jade-3)] text-[var(--joballa-primary)]",
+                        ].join(" ")}
+                      >
+                        {accountStatus === "Suspended" ? t("common.suspended") : t("common.active")}
+                      </span>
+                      {profileActions.length > 0 ? (
+                        <MoreMenu label={t("users.actionsFor", { name: profile.name })} items={profileActions} />
+                      ) : null}
+                    </div>
                   </div>
 
                   <div className="mt-5 flex flex-wrap gap-2">
                     <span className="rounded-full border border-[var(--joballa-border)] bg-[var(--joballa-page-tint)] px-3 py-1.5 text-xs font-bold">{formatRoleLabel(profile.role)}</span>
-                    <span className={["rounded-full px-3 py-1.5 text-xs font-bold", accountStatus === "Suspended" ? "bg-[var(--joballa-danger-bg)] text-[var(--joballa-danger-fg)]" : "bg-[var(--joballa-jade-3)] text-[var(--joballa-primary)]"].join(" ")}>
-                      {accountStatus === "Suspended" ? t("common.suspended") : t("common.active")}
-                    </span>
                   </div>
 
                   <div className="mt-6 grid gap-2.5 text-sm font-medium text-[var(--joballa-muted)]">
@@ -404,62 +463,14 @@ export function ProfilesView() {
         </div>
 
         {selectedProfile ? (
-          isRefreshing ? (
-            <ProfileDetailSkeleton />
-          ) : (
-            <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-0 min-[600px]:px-6 min-[600px]:py-8 xl:static xl:z-auto xl:block xl:bg-transparent xl:p-0" onClick={() => setSelectedProfileId(null)}>
-              <aside className="h-full w-full overflow-y-auto rounded-none border border-[var(--joballa-border)] bg-[var(--joballa-page-tint)] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.28)] min-[600px]:h-[min(88vh,900px)] min-[600px]:max-w-[760px] min-[600px]:rounded-[20px] xl:sticky xl:top-5 xl:h-fit xl:max-h-[calc(100dvh-6.5rem)] xl:max-w-none xl:shadow-none" onClick={(event) => event.stopPropagation()}>
-                <section className="rounded-[16px] border border-[var(--joballa-border)] bg-[var(--joballa-card)] p-5">
-                  <div className="mb-5 flex justify-end gap-2">
-                    {getProfileActions(selectedProfile).length > 0 ? <MoreMenu label={t("profiles.detailActions", { name: selectedProfile.name })} items={getProfileActions(selectedProfile)} /> : null}
-                    <button type="button" aria-label={t("profiles.closeDetails")} className="grid h-10 w-10 place-items-center rounded-full border border-[var(--joballa-border)] text-[var(--joballa-muted)]" onClick={() => setSelectedProfileId(null)}><X size={18} /></button>
-                  </div>
-                  <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-                    <UserAvatar name={selectedProfile.name} photoUrl={selectedProfile.photoUrl} size="lg" />
-                    <div className="min-w-0">
-                      <h2 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">{selectedProfile.name}{selectedProfile.isVerified ? <BadgeCheck size={22} className="text-[var(--joballa-primary)]" /> : null}</h2>
-                      <p className="mt-1 text-sm font-semibold text-[var(--joballa-muted)]">{selectedProfile.position || selectedProfile.companyName || formatRoleLabel(selectedProfile.role)}</p>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <span className="rounded-full bg-[var(--joballa-page-tint)] px-3 py-1 text-xs font-bold">{formatRoleLabel(selectedProfile.role)}</span>
-                        <span className="rounded-full bg-[var(--joballa-jade-3)] px-3 py-1 text-xs font-bold text-[var(--joballa-primary)]">
-                          {t("profiles.verification", { status: formatRoleLabel(selectedProfile.status) })}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <dl className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {[
-                      [t("profiles.email"), selectedProfile.email, Mail],
-                      [t("profiles.phoneLabel"), selectedProfile.phone, Phone],
-                      [t("profiles.role"), formatRoleLabel(selectedProfile.role), UserRound],
-                      [t("profiles.dob"), selectedProfile.dateOfBirth, CalendarDays],
-                      [t("profiles.position"), selectedProfile.position, BriefcaseBusiness],
-                      [t("profiles.organizationLabel"), selectedProfile.companyName, Building2],
-                      [t("profiles.location"), [selectedProfile.city, selectedProfile.region, selectedProfile.country].filter(Boolean).join(", "), MapPin],
-                      [t("profiles.profileViews"), selectedProfile.profileViews, UserRound],
-                      [t("profiles.createdBy"), selectedProfile.createdBy, UserRound],
-                      [t("profiles.createdLabel"), formatProfileDate(selectedProfile.createdAt), CalendarDays],
-                    ].filter(([, value]) => value !== null && value !== undefined && value !== "").map(([label, value, Icon]) => {
-                      const DetailIcon = Icon as typeof Mail;
-                      return (
-                        <div key={String(label)} className="rounded-[12px] border border-[var(--joballa-border)] p-4">
-                          <dt className="flex items-center gap-2 text-xs font-medium text-[var(--joballa-muted)]"><DetailIcon size={14} />{String(label)}</dt>
-                          <dd className="mt-2 break-words text-sm font-semibold">{String(value)}</dd>
-                        </div>
-                      );
-                    })}
-                  </dl>
-                </section>
-                {selectedProfile.shortBio ? (
-                  <section className="mt-4 rounded-[16px] border border-[var(--joballa-border)] bg-[var(--joballa-card)] p-5">
-                    <h3 className="font-bold">{t("profiles.bio")}</h3>
-                    <p className="mt-3 text-sm font-medium leading-6 text-[var(--joballa-muted)]">{selectedProfile.shortBio}</p>
-                  </section>
-                ) : null}
-              </aside>
-            </div>
-          )
+          <UserDetailPanel
+            user={isRefreshing ? null : profileToDetailFields(selectedProfile, (key, vars) => t(key as Parameters<typeof t>[0], vars), formatRoleLabel)}
+            loading={isRefreshing}
+            onClose={() => setSelectedProfileId(null)}
+            menuItems={getProfileActions(selectedProfile)}
+            menuLabel={t("profiles.detailActions", { name: selectedProfile.name })}
+            closeLabel={t("profiles.closeDetails")}
+          />
         ) : null}
       </div>
 
@@ -488,9 +499,8 @@ export function ProfilesView() {
               <label className="grid gap-2 text-sm font-semibold">{t("profiles.fullName")}<input className="rounded-[8px] border border-[var(--joballa-border)] bg-[var(--joballa-input-bg)] px-3 py-2.5 outline-none" value={form.name} maxLength={INPUT_MAX_LENGTH.fullName} onChange={(event) => setForm((value) => ({ ...value, name: event.target.value }))} required /></label>
               <label className="grid gap-2 text-sm font-semibold">{t("profiles.email")}<input type="email" className="rounded-[8px] border border-[var(--joballa-border)] bg-[var(--joballa-input-bg)] px-3 py-2.5 outline-none" value={form.email} maxLength={INPUT_MAX_LENGTH.email} onChange={(event) => setForm((value) => ({ ...value, email: event.target.value }))} required /></label>
               <label className="grid gap-2 text-sm font-semibold">{t("profiles.phone")}<input className="rounded-[8px] border border-[var(--joballa-border)] bg-[var(--joballa-input-bg)] px-3 py-2.5 outline-none" value={form.phone} maxLength={INPUT_MAX_LENGTH.phone} onChange={(event) => setForm((value) => ({ ...value, phone: event.target.value }))} required /></label>
-              <label className="grid gap-2 text-sm font-semibold">{t("profiles.dateOfBirth")}<input type="date" className="rounded-[8px] border border-[var(--joballa-border)] bg-[var(--joballa-input-bg)] px-3 py-2.5 outline-none" value={form.dateOfBirth} onChange={(event) => setForm((value) => ({ ...value, dateOfBirth: event.target.value }))} /></label>
               <label className="grid gap-2 text-sm font-semibold">{t("profiles.type")}<select className="rounded-[8px] border border-[var(--joballa-border)] bg-[var(--joballa-input-bg)] px-3 py-2.5 outline-none" value={form.role} onChange={(event) => setForm((value) => ({ ...value, role: event.target.value as "worker" | "employer" }))}><option value="worker">{t("common.worker")}</option><option value="employer">{t("common.employer")}</option></select></label>
-              <label className="grid gap-2 text-sm font-semibold">{form.role === "employer" ? t("profiles.organization") : t("profiles.roleOrPosition")}<input className="rounded-[8px] border border-[var(--joballa-border)] bg-[var(--joballa-input-bg)] px-3 py-2.5 outline-none" value={form.role === "employer" ? form.companyName : form.position} maxLength={form.role === "employer" ? INPUT_MAX_LENGTH.organization : INPUT_MAX_LENGTH.position} onChange={(event) => setForm((value) => form.role === "employer" ? { ...value, companyName: event.target.value } : { ...value, position: event.target.value })} /></label>
+              <label className="grid gap-2 text-sm font-semibold">{form.role === "employer" ? t("profiles.organization") : t("profiles.professionalSummary")}<input className="rounded-[8px] border border-[var(--joballa-border)] bg-[var(--joballa-input-bg)] px-3 py-2.5 outline-none" value={form.role === "employer" ? form.companyName : form.professionalSummary} maxLength={form.role === "employer" ? INPUT_MAX_LENGTH.organization : INPUT_MAX_LENGTH.position} onChange={(event) => setForm((value) => form.role === "employer" ? { ...value, companyName: event.target.value } : { ...value, professionalSummary: event.target.value })} /></label>
               <label className="grid gap-2 text-sm font-semibold">{t("profiles.region")}<select required className="rounded-[8px] border border-[var(--joballa-border)] bg-[var(--joballa-input-bg)] px-3 py-2.5 outline-none" value={form.region} onChange={(event) => setForm((value) => ({ ...value, region: event.target.value, city: "" }))}><option value="">{t("profiles.selectRegion")}</option>{Object.keys(CAMEROON_CITIES).map((region) => <option key={region}>{region}</option>)}</select></label>
               <label className="grid gap-2 text-sm font-semibold">{t("profiles.city")}<select required disabled={!form.region} className="rounded-[8px] border border-[var(--joballa-border)] bg-[var(--joballa-input-bg)] px-3 py-2.5 outline-none disabled:cursor-not-allowed disabled:opacity-50" value={form.city} onChange={(event) => setForm((value) => ({ ...value, city: event.target.value }))}><option value="">{form.region ? t("profiles.selectCity") : t("profiles.selectRegionFirst")}</option>{(CAMEROON_CITIES[form.region] ?? []).map((city) => <option key={city}>{city}</option>)}</select></label>
               <label className="grid gap-2 text-sm font-semibold sm:col-span-2">{t("profiles.bio")}<textarea className="min-h-24 rounded-[8px] border border-[var(--joballa-border)] bg-[var(--joballa-input-bg)] px-3 py-2.5 outline-none" value={form.shortBio} maxLength={INPUT_MAX_LENGTH.shortBio} onChange={(event) => setForm((value) => ({ ...value, shortBio: event.target.value }))} /></label>

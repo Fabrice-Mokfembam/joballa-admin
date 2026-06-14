@@ -5,7 +5,7 @@ import type { JobListItem } from "@/lib/api/types";
 import { MIDDLE_DOT } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
 import { useTranslatedFormat } from "@/lib/i18n/use-translated-format";
-import { MoreMenu } from "../../ui";
+import { MoreMenu, UserAvatar } from "../../ui";
 
 export function JobCard({
   job,
@@ -19,8 +19,10 @@ export function JobCard({
   menuItems?: Array<{ label: string; tone?: "danger"; onClick: () => void | Promise<void | boolean | null> }>;
 }) {
   const { t } = useTranslation();
-  const { formatRelativeDate, formatJobStatusLabel } = useTranslatedFormat();
+  const { formatRelativeDate, formatJobStatusLabel, formatRoleLabel } = useTranslatedFormat();
   const posterName = formatJobPosterName(job.client, job.department);
+  const posterRole =
+    job.postedByType === "company" ? "employer" : job.postedByType === "worker" ? "worker" : "unknown";
   const normalizedStatus = job.status.toLowerCase();
   const issue =
     job.rejectionReason ?? job.issueReason ?? job.tierReason ?? job.moderationNotes ?? null;
@@ -49,6 +51,11 @@ export function JobCard({
           {formatRelativeDate(job.createdAt)}
         </span>
         <div className="flex items-center gap-2">
+          {job.createdByAdmin ? (
+            <span className="rounded-full border border-[var(--joballa-primary)] bg-[var(--joballa-jade-3)] px-3 py-1 text-xs font-bold text-[var(--joballa-primary)]">
+              {t("jobs.adminCreatedTag")}
+            </span>
+          ) : null}
           <span className="rounded-full bg-[var(--joballa-page-tint)] px-3 py-1 text-xs font-bold text-[var(--joballa-muted)]">
             {formatJobStatusLabel(job.status)}
           </span>
@@ -73,13 +80,11 @@ export function JobCard({
       </div>
       <div className="mt-12 flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--joballa-neutral-avatar-bg)] text-sm font-bold text-[var(--joballa-neutral-avatar-fg)]">
-            {posterName.charAt(0).toUpperCase()}
-          </span>
+          <UserAvatar name={posterName} photoUrl={job.posterPhotoUrl} size="sm" />
           <div className="min-w-0">
             <span className="admin-card-title block truncate">{posterName}</span>
             <span className="admin-card-meta block truncate">
-              {formatJobDepartment(job.department)}
+              {formatRoleLabel(posterRole)}
             </span>
           </div>
         </div>

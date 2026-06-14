@@ -125,9 +125,13 @@ export function Filters({ placeholder = "Search by name, ID or department" }: { 
 export function DataTable({
   columns,
   rows,
+  onRowClick,
+  getRowClassName,
 }: {
   columns: string[];
   rows: Array<Array<React.ReactNode>>;
+  onRowClick?: (rowIndex: number) => void;
+  getRowClassName?: (rowIndex: number) => string | undefined;
 }) {
   return (
     <div className="min-w-0 overflow-hidden rounded-[8px] border border-[var(--joballa-border)] bg-[var(--joballa-card)]">
@@ -135,7 +139,12 @@ export function DataTable({
         {rows.map((row, rowIndex) => (
           <article
             key={rowIndex}
-            className="rounded-[8px] border border-[var(--joballa-border)] bg-[var(--joballa-card)] p-4"
+            className={[
+              "rounded-[8px] border border-[var(--joballa-border)] bg-[var(--joballa-card)] p-4",
+              onRowClick ? "cursor-pointer hover:bg-[var(--joballa-row-hover)]" : "",
+              getRowClassName?.(rowIndex) ?? "",
+            ].join(" ")}
+            onClick={onRowClick ? () => onRowClick(rowIndex) : undefined}
           >
             {row.map((cell, cellIndex) => (
               <div key={cellIndex} className="flex items-start justify-between gap-4 py-2 text-sm first:pt-0 last:pb-0">
@@ -161,7 +170,15 @@ export function DataTable({
           </thead>
           <tbody>
             {rows.map((row, index) => (
-              <tr key={index} className="border-b border-[var(--joballa-border)] last:border-0 hover:bg-[var(--joballa-row-hover)]">
+              <tr
+                key={index}
+                className={[
+                  "border-b border-[var(--joballa-border)] last:border-0 hover:bg-[var(--joballa-row-hover)]",
+                  onRowClick ? "cursor-pointer" : "",
+                  getRowClassName?.(index) ?? "",
+                ].join(" ")}
+                onClick={onRowClick ? () => onRowClick(index) : undefined}
+              >
                 {row.map((cell, cellIndex) => (
                   <td
                     key={cellIndex}
@@ -169,6 +186,7 @@ export function DataTable({
                       "px-5 py-4 align-middle",
                       cellIndex === row.length - 1 ? "w-px whitespace-nowrap" : "",
                     ].join(" ")}
+                    onClick={cellIndex === row.length - 1 ? (event) => event.stopPropagation() : undefined}
                   >
                     {cell}
                   </td>

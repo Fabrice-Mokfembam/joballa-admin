@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { AdminPostJobModal } from "../features/jobs/admin-post-job-modal";
 import {
   Building2,
   Check,
@@ -54,12 +55,16 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [isSavingAccount, setIsSavingAccount] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">(() => getSavedTheme());
+  const [postJobOpen, setPostJobOpen] = useState(false);
+  const [postJobProfileUserId, setPostJobProfileUserId] = useState<string | null>(null);
   const accountRef = useClickAway<HTMLDivElement>(() => setIsAccountOpen(false));
   const pathname = usePathname();
   const pageTitle = t(getPageTitleKey(pathname));
   const accountName = user?.name ?? t("shell.adminFallback");
   const accountEmail = user?.email ?? "";
   const accountInitials = getInitials(accountName);
+  const canPostJob = hasPermission("create_profiles");
+  const showPostJobButton = canPostJob && pathname === "/admin/profiles";
   const hasAnyPermission = (...permissions: Parameters<typeof hasPermission>[0][]) =>
     permissions.some((permission) => hasPermission(permission));
 
@@ -178,6 +183,16 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     applyJoballaTheme(theme);
   }, [theme]);
 
+  useEffect(() => {
+    function openPostJob(event: Event) {
+      const detail = (event as CustomEvent<{ profileUserId?: string }>).detail;
+      setPostJobProfileUserId(detail?.profileUserId ?? null);
+      setPostJobOpen(true);
+    }
+    window.addEventListener("admin:create-job", openPostJob);
+    return () => window.removeEventListener("admin:create-job", openPostJob);
+  }, []);
+
   function applyTheme(nextTheme: "light" | "dark") {
     setTheme(nextTheme);
     applyJoballaTheme(nextTheme);
@@ -262,7 +277,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 isSidebarCollapsed ? "lg:hidden" : "",
               ].join(" ")}
             >
-              <Image src="/brand/joballa-panel-mark.png" alt="Joballa" width={34} height={34} className="rounded-[7px]" />
+              <Image src="/brand/joballa-panel-mark.png" alt="joballa" width={34} height={34} className="rounded-[7px]" />
               <span className={["font-remixa text-xl font-bold", isSidebarCollapsed ? "lg:hidden" : ""].join(" ")}>
                 joballa
               </span>
@@ -386,11 +401,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   />
                 </button>
               </label>
-              <label className="grid gap-2 rounded-[8px] px-1 py-2.5">
-                <span className="text-sm font-semibold">{t("common.language")}</span>
+              <label className="block px-1 py-2.5">
                 <select
                   aria-label={t("common.language")}
-                  className="min-h-10 w-full rounded-[8px] border border-[var(--joballa-border)] bg-[var(--joballa-input-bg)] px-3 text-sm font-semibold text-[var(--joballa-fg)] outline-none"
+                  className="min-h-10 w-full bg-transparent text-sm font-semibold text-[var(--joballa-fg)] outline-none"
                   value={locale}
                   onChange={(event) => setLocale(event.target.value as "en" | "fr")}
                 >
@@ -544,6 +558,22 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 {t("shell.addProfile")}
               </button>
             ) : null}
+            {showPostJobButton ? (
+              <button
+                type="button"
+                className="rounded-full border border-[var(--joballa-primary)] bg-[var(--joballa-card)] px-3 py-2.5 text-xs font-bold text-[var(--joballa-primary)] sm:px-4 sm:text-sm"
+                onClick={() => {
+                  const profileUserId =
+                    (window as Window & { __adminSelectedProfileUserId?: string | null }).__adminSelectedProfileUserId ??
+                    null;
+                  window.dispatchEvent(
+                    new CustomEvent("admin:create-job", { detail: { profileUserId: profileUserId ?? undefined } }),
+                  );
+                }}
+              >
+                {t("shell.postJob")}
+              </button>
+            ) : null}
             <button
               aria-label={t("shell.openSidebar")}
               className="grid h-10 w-10 place-items-center rounded-[8px] border border-[var(--joballa-border)] bg-[var(--joballa-card)] lg:hidden"
@@ -557,6 +587,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           <div className="mx-auto w-full max-w-[1280px] px-4 py-5 sm:px-5 sm:py-6 lg:px-8">{children}</div>
         </div>
       </main>
+      <AdminPostJobModal
+        open={postJobOpen}
+        initialProfileUserId={postJobProfileUserId}
+        onClose={() => {
+          setPostJobOpen(false);
+          setPostJobProfileUserId(null);
+        }}
+      />
     </div>
   );
 }

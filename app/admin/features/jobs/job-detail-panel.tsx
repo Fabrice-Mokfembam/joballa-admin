@@ -6,7 +6,8 @@ import type { JobDetail, JobListItem } from "@/lib/api/types";
 import { EM_DASH, MIDDLE_DOT } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
 import { useTranslatedFormat } from "@/lib/i18n/use-translated-format";
-import { MoreMenu } from "../../ui";
+import { MoreMenu, UserAvatar } from "../../ui";
+import { JobDetailPanelSkeleton } from "../../ui/skeletons";
 
 export function JobDetailPanel({
   job,
@@ -24,8 +25,10 @@ export function JobDetailPanel({
   primaryActions?: React.ReactNode;
 }) {
   const { t } = useTranslation();
-  const { formatJobStatusLabel } = useTranslatedFormat();
+  const { formatJobStatusLabel, formatRoleLabel } = useTranslatedFormat();
   const posterName = formatJobPosterName(job.client, job.department);
+  const posterRole =
+    job.postedByType === "company" ? "employer" : job.postedByType === "worker" ? "worker" : "unknown";
 
   return (
     <div
@@ -36,10 +39,8 @@ export function JobDetailPanel({
         className="h-full w-full overflow-y-auto rounded-none border border-[var(--joballa-border)] bg-[var(--joballa-page-tint)] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.28)] min-[600px]:h-[min(88vh,900px)] min-[600px]:max-w-[760px] min-[600px]:rounded-[20px] xl:sticky xl:top-5 xl:h-fit xl:max-h-[calc(100dvh-6.5rem)] xl:max-w-none xl:shadow-none"
         onClick={(event) => event.stopPropagation()}
       >
-        {detailLoading && !detail ? (
-          <div className="grid min-h-[320px] place-items-center">
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--joballa-border)] border-t-[var(--joballa-primary)]" />
-          </div>
+        {detailLoading ? (
+          <JobDetailPanelSkeleton />
         ) : (
           <>
             <section className="rounded-[16px] border border-[var(--joballa-border)] bg-[var(--joballa-card)] p-5">
@@ -67,18 +68,21 @@ export function JobDetailPanel({
 
               <h3 className="mt-8 text-2xl font-bold">{job.title}</h3>
               <div className="mt-2 flex items-center gap-2 text-sm font-semibold text-[var(--joballa-muted)]">
-                <span className="grid h-7 w-7 place-items-center rounded-full bg-[var(--joballa-neutral-avatar-bg)] text-[var(--joballa-neutral-avatar-fg)]">
-                  {posterName.charAt(0).toUpperCase()}
-                </span>
+                <UserAvatar name={posterName} photoUrl={job.posterPhotoUrl} size="sm" className="!h-7 !w-7 !text-xs" />
                 {posterName}
               </div>
               <p className="mt-1 text-xs font-semibold text-[var(--joballa-muted)]">
-                {t("jobs.departmentLabel", { name: formatJobDepartment(job.department) })}
+                {formatRoleLabel(posterRole)}
               </p>
 
               <p className="mt-3 inline-flex rounded-full border border-[var(--joballa-border)] bg-[var(--joballa-tag-bg)] px-3 py-1 text-sm font-semibold text-[var(--joballa-tag-fg)]">
                 {formatJobStatusLabel(job.status)}
               </p>
+              {job.createdByAdmin ? (
+                <p className="mt-2 inline-flex rounded-full border border-[var(--joballa-primary)] bg-[var(--joballa-jade-3)] px-3 py-1 text-sm font-semibold text-[var(--joballa-primary)]">
+                  {t("jobs.adminCreatedTag")}
+                </p>
+              ) : null}
 
               {primaryActions ? <div className="mt-6 grid gap-3 sm:grid-cols-2">{primaryActions}</div> : null}
 

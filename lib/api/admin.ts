@@ -4,6 +4,7 @@ import {
   apiGet,
   apiPatch,
   apiPost,
+  apiPostForm,
   apiPut,
   apiRequest,
   getRefreshToken,
@@ -188,6 +189,7 @@ export const jobsApi = {
   reject: async (jobId: string, reason: string) => mapJob(await apiPatch<any>(`/admin/jobs/${jobId}/reject`, { reason })),
   updateStatus: async (jobId: string, status: string) =>
     mapJob(await apiPatch<any>(`/admin/jobs/${jobId}/status`, { status })),
+  create: async (body: Record<string, unknown>) => mapJob(await apiPost<any>("/admin/jobs", body)),
 };
 
 // Reports
@@ -333,7 +335,19 @@ export const profilesApi = {
     roleOrPosition?: string;
     organization?: string;
     shortBio?: string;
-  }): Promise<AdminProfile> => mapProfile(await apiPost<any>("/admin/profiles", body)),
+    profilePhoto?: File | null;
+  }): Promise<AdminProfile> => {
+    const { profilePhoto, ...fields } = body;
+    if (profilePhoto) {
+      const formData = new FormData();
+      formData.append("profilePhoto", profilePhoto);
+      for (const [key, value] of Object.entries(fields)) {
+        if (value != null && value !== "") formData.append(key, String(value));
+      }
+      return mapProfile(await apiPostForm<any>("/admin/profiles", formData));
+    }
+    return mapProfile(await apiPost<any>("/admin/profiles", fields));
+  },
   update: async (profileId: string, body: {
     fullName?: string;
     roleOrPosition?: string;

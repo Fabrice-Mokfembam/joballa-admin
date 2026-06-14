@@ -34,5 +34,5 @@ export function getPageTitle(pathname: string) {
   if (pathname.startsWith("/admin/disputes") || pathname.startsWith("/admin/reports")) return "Reports";
   if (pathname.startsWith("/admin/platform-logs")) return "Logs";
   if (pathname.startsWith("/admin/verified-jobs")) return "Verified jobs";
-  return "Joballa Admin";
+  return "joballa Admin";
 }

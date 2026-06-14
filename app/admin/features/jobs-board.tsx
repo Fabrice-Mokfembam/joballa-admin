@@ -202,7 +202,7 @@ export function JobsBoard({
           <JobDetailPanel
             job={selectedJob}
             detail={detail}
-            detailLoading={false}
+            detailLoading={isRefreshing}
             onClose={() => setIsDetailsOpen(false)}
             primaryActions={getJobPanelActions(variant, selectedJob, canModerate, setActionRequest, t)}
           />

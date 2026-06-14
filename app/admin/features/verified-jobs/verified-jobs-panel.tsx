@@ -178,7 +178,7 @@ export function VerifiedJobsPanel() {
           <JobDetailPanel
             job={selectedJob}
             detail={detail}
-            detailLoading={false}
+            detailLoading={isRefreshing}
             onClose={() => setIsDetailsOpen(false)}
             menuItems={getJobMenuItems("verified", selectedJob, canModerate, setActionRequest, t)}
           />

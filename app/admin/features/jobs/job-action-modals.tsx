@@ -234,7 +234,7 @@ export function getJobPanelActions(
         </button>
         <button
           type="button"
-          className="rounded-full bg-[var(--joballa-primary)] px-5 py-4 text-sm font-bold text-[var(--joballa-on-primary)] sm:col-span-2"
+          className="rounded-full bg-[var(--joballa-primary)] px-5 py-4 text-sm font-bold text-[var(--joballa-on-primary)]"
           onClick={() => openAction({ kind: "publish", job })}
         >
           {t("jobs.publishAction")}

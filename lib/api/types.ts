@@ -237,6 +237,9 @@ export type JobListItem = {
   availability: string;
   createdAt: string;
   applications: number;
+  createdByAdmin?: boolean;
+  posterPhotoUrl?: string | null;
+  postedByType?: "worker" | "company" | null;
   rejectionReason?: string | null;
   moderationNotes?: string | null;
   issueReason?: string | null;

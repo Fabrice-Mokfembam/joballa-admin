@@ -164,6 +164,12 @@ export function formatJobPosterName(
   return client.trim();
 }
 
+export function formatJobPosterRole(postedByType?: string | null): string {
+  if (postedByType === "worker") return "Worker";
+  if (postedByType === "company") return "Employer";
+  return "Unknown";
+}
+
 export function formatRiskLabel(risk: string): string {
   return risk.charAt(0).toUpperCase() + risk.slice(1);
 }

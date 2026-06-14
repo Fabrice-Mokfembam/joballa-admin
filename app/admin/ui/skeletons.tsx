@@ -313,6 +313,91 @@ export function AdminCardGridSkeleton({ count = 6 }: { count?: number }) {
   );
 }
 
+export function JobDetailPanelSkeleton() {
+  return (
+    <aside className="rounded-[20px] border border-[var(--joballa-border)] bg-[var(--joballa-page-tint)] p-4">
+      <section className="rounded-[16px] border border-[var(--joballa-border)] bg-[var(--joballa-card)] p-5">
+        <div className="mb-4 flex justify-end">
+          <SkeletonBar className="h-10 w-10 rounded-full" />
+        </div>
+        <SkeletonBar className="h-9 w-36" />
+        <SkeletonBar className="mt-2 h-4 w-32" />
+        <SkeletonBar className="mt-8 h-8 w-4/5" />
+        <div className="mt-3 flex items-center gap-2">
+          <SkeletonBar className="h-7 w-7 rounded-full" />
+          <SkeletonBar className="h-4 w-40" />
+        </div>
+        <SkeletonBar className="mt-3 h-7 w-24 rounded-full" />
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          <SkeletonBar className="h-12 rounded-full" />
+          <SkeletonBar className="h-12 rounded-full" />
+        </div>
+        <div className="mt-6 space-y-3">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="flex justify-between gap-6">
+              <SkeletonBar className="h-4 w-24" />
+              <SkeletonBar className="h-4 w-28" />
+            </div>
+          ))}
+        </div>
+      </section>
+      <section className="mt-4 rounded-[16px] border border-[var(--joballa-border)] bg-[var(--joballa-card)] p-5">
+        <SkeletonBar className="h-5 w-32" />
+        <SkeletonBar className="mt-4 h-3 w-full" />
+        <SkeletonBar className="mt-2 h-3 w-full" />
+        <SkeletonBar className="mt-2 h-3 w-4/5" />
+      </section>
+    </aside>
+  );
+}
+
+export function ProfileDetailPanelSkeleton() {
+  return (
+    <aside className="rounded-[20px] border border-[var(--joballa-border)] bg-[var(--joballa-page-tint)] p-4">
+      <section className="rounded-[16px] border border-[var(--joballa-border)] bg-[var(--joballa-card)] p-5">
+        <div className="mb-5 flex justify-end gap-2">
+          <SkeletonBar className="h-10 w-10 rounded-full" />
+          <SkeletonBar className="h-10 w-10 rounded-full" />
+        </div>
+        <div className="flex flex-col gap-5 border-b border-[var(--joballa-border)] pb-8 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-6">
+            <SkeletonBar className="h-24 w-24 shrink-0 rounded-full" />
+            <div className="min-w-0 flex-1">
+              <SkeletonBar className="h-7 w-48" />
+              <SkeletonBar className="mt-2 h-3 w-36" />
+              <div className="mt-3 flex gap-2">
+                <SkeletonBar className="h-7 w-20 rounded-full" />
+                <SkeletonBar className="h-7 w-24 rounded-full" />
+              </div>
+            </div>
+          </div>
+          <div className="hidden w-[180px] shrink-0 space-y-2 sm:block">
+            <SkeletonBar className="ml-auto h-3 w-32" />
+            <SkeletonBar className="ml-auto h-3 w-28" />
+            <SkeletonBar className="ml-auto h-3 w-36" />
+          </div>
+        </div>
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div
+            key={index}
+            className="flex flex-col gap-4 border-b border-[var(--joballa-border)] py-8 last:border-b-0 sm:flex-row sm:items-start sm:gap-16"
+          >
+            <SkeletonBar className="h-4 w-24 shrink-0" />
+            <div className="min-w-0 flex-1 space-y-2">
+              <SkeletonBar className="h-4 w-full" />
+              <SkeletonBar className="h-4 w-4/5" />
+            </div>
+          </div>
+        ))}
+      </section>
+    </aside>
+  );
+}
+
+export function UserDetailPanelSkeleton() {
+  return <ProfileDetailPanelSkeleton />;
+}
+
 export function ProfileCardGridSkeleton({ count = 6 }: { count?: number }) {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

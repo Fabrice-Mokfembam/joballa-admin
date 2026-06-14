@@ -286,7 +286,8 @@ export async function apiRequest<T>(
 
   async function doFetch(token: string | null): Promise<Response> {
     const headers = new Headers(init.headers);
-    if (!headers.has("Content-Type") && init.body) {
+    const isFormData = typeof FormData !== "undefined" && init.body instanceof FormData;
+    if (!headers.has("Content-Type") && init.body && !isFormData) {
       headers.set("Content-Type", "application/json");
     }
     if (token && !skipAuth) {
@@ -379,6 +380,13 @@ export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
   return apiRequest<T>(path, {
     method: "POST",
     body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+}
+
+export async function apiPostForm<T>(path: string, formData: FormData): Promise<T> {
+  return apiRequest<T>(path, {
+    method: "POST",
+    body: formData,
   });
 }
 

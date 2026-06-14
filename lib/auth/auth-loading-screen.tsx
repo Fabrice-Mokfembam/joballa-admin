@@ -16,7 +16,7 @@ export function AuthLoadingScreen() {
         <div className="relative grid h-16 w-16 place-items-center">
           <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-[var(--joballa-border)] border-t-[var(--joballa-primary)]" />
           <Image
-            alt="Joballa"
+            alt="joballa"
             className="h-8 w-8 rounded-[7px] object-contain"
             height={32}
             priority

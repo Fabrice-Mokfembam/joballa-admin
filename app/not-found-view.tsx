@@ -21,7 +21,7 @@ export function NotFoundView() {
         <div className="mx-auto grid h-16 w-16 place-items-center rounded-[14px] bg-[var(--joballa-jade-3)]">
           <Image
             src="/brand/joballa-panel-mark.png"
-            alt="Joballa"
+            alt="joballa"
             width={40}
             height={40}
             className="rounded-[8px]"

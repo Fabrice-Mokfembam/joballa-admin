@@ -37,7 +37,7 @@ export function LoginForm() {
         <div className="w-full max-w-[576px]">
           <div className="mb-9 text-center">
             <div className="mb-5 flex items-center justify-center gap-3 lg:hidden">
-              <Image src="/brand/auth-logo-mark.png" alt="Joballa mark" width={52} height={52} />
+              <Image src="/brand/auth-logo-mark.png" alt="joballa mark" width={52} height={52} />
               <span className="font-remixa text-3xl font-bold">joballa</span>
             </div>
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{t("login.title")}</h1>
@@ -70,7 +70,7 @@ export function LoginForm() {
       </section>
       <aside className="hidden bg-[var(--joballa-primary)] px-8 py-10 text-white lg:flex lg:flex-col">
         <div className="flex items-center gap-3">
-          <Image src="/brand/auth-logo-mark.png" alt="Joballa mark" width={52} height={52} />
+          <Image src="/brand/auth-logo-mark.png" alt="joballa mark" width={52} height={52} />
           <span className="font-remixa text-3xl font-bold">joballa</span>
         </div>
         <p className="mt-14 max-w-[340px] font-remixa text-5xl font-bold leading-[1.3] text-[var(--joballa-jade-5)]">{t("login.tagline")}</p>

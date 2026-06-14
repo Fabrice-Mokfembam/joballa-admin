@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Joballa Admin",
-  description: "Joballa internal admin operations panel",
+  title: "joballa Admin",
+  description: "joballa internal admin operations panel",
   icons: {
     icon: "/brand/joballa-panel-mark.png",
     shortcut: "/brand/joballa-panel-mark.png",
