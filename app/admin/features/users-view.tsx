@@ -10,7 +10,7 @@ import type { PlatformUser } from "@/lib/api/types";
 import { emitAdminRefresh, useAdminRefresh } from "@/lib/admin-refresh";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useAdminAction } from "@/lib/hooks/use-admin-action";
-import { isAsyncRefreshing, isInitialAsyncLoad, useAsyncData, useMutation } from "@/lib/hooks/use-async";
+import { isAsyncRefreshing, isInitialAsyncLoad, useAsyncData, useMutation, clearAsyncDataCache } from "@/lib/hooks/use-async";
 import {
   DataTable,
   FilterSelect,
@@ -24,7 +24,8 @@ import {
 } from "../ui";
 import { DataTableSkeleton, ProfileCardGridSkeleton } from "../ui/skeletons";
 import { AccessDeniedState, EmptyState, ErrorState } from "../ui/states";
-import { UserDetailPanel, type UserDetailFields } from "./user-detail-panel";
+import { UserDetailPanel } from "./user-detail-panel";
+import { adminUserDetailToFields } from "./user-detail-fields";
 
 const USERS_VIEW_STORAGE_KEY = "admin:users:view";
 
@@ -46,40 +47,6 @@ function formatUserDate(value?: string | null): string | null {
     day: "2-digit",
     year: "numeric",
   });
-}
-
-function userToDetailFields(
-  user: PlatformUser,
-  t: (key: string, vars?: Record<string, string>) => string,
-  formatRoleLabel: (role: string) => string,
-): UserDetailFields {
-  const isActive = user.status.toLowerCase() === "active";
-  return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    status: user.status,
-    phone: user.phone,
-    photoUrl: user.photoUrl,
-    headline: formatRoleLabel(user.role),
-    badges: [
-      {
-        label: isActive ? t("common.active") : t("common.suspended"),
-        className: isActive
-          ? "bg-[var(--joballa-jade-3)] text-[var(--joballa-primary)]"
-          : "bg-[var(--joballa-danger-bg)] text-[var(--joballa-danger-fg)]",
-      },
-    ],
-    sections: [
-      formatUserDate(user.joinedAt)
-        ? { title: t("users.joined"), content: formatUserDate(user.joinedAt) ?? "" }
-        : null,
-      formatUserDate(user.lastActivityAt)
-        ? { title: t("users.lastActivity"), content: formatUserDate(user.lastActivityAt) ?? "" }
-        : null,
-    ].filter((section): section is { title: string; content: string } => section !== null),
-  };
 }
 
 export function UsersView() {
@@ -150,7 +117,17 @@ export function UsersView() {
   const employerCount = users.filter((user) => user.role === "employer").length;
   const selectedUser = visibleUsers.find((user) => user.id === selectedUserId) ?? null;
 
+  const { data: selectedUserDetail, loading: detailLoading } = useAsyncData(
+    async () => {
+      if (!selectedUserId) return null;
+      return usersApi.get(selectedUserId);
+    },
+    [selectedUserId],
+    { cacheKey: selectedUserId ? `users:detail:${selectedUserId}` : undefined },
+  );
+
   async function refreshUsersAndDepartments() {
+    clearAsyncDataCache("users:detail:");
     emitAdminRefresh("users", "departments");
     reload();
   }
@@ -289,8 +266,8 @@ export function UsersView() {
           "grid gap-6",
           selectedUser
             ? viewMode === "table"
-              ? "xl:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] xl:items-start"
-              : "xl:grid-cols-[minmax(320px,500px)_minmax(0,1fr)] xl:items-start"
+              ? "xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:items-stretch"
+              : "xl:grid-cols-[minmax(320px,500px)_minmax(0,1fr)] xl:items-stretch"
             : "",
         ].join(" ")}
       >
@@ -410,14 +387,24 @@ export function UsersView() {
           )}
         </div>
 
-        {selectedUser ? (
-          <UserDetailPanel
-            user={isRefreshing ? null : userToDetailFields(selectedUser, (key, vars) => t(key as Parameters<typeof t>[0], vars), formatRoleLabel)}
-            loading={isRefreshing}
+        {selectedUserId ? (
+          <div className="min-w-0 w-full">
+            <UserDetailPanel
+            user={
+              selectedUserDetail
+                ? adminUserDetailToFields(
+                    selectedUserDetail,
+                    (key, vars) => t(key as Parameters<typeof t>[0], vars),
+                    formatRoleLabel,
+                  )
+                : null
+            }
+            loading={detailLoading}
             onClose={() => setSelectedUserId(null)}
-            menuItems={getUserActions(selectedUser)}
-            menuLabel={t("users.actionsFor", { name: selectedUser.name })}
-          />
+            menuItems={selectedUser ? getUserActions(selectedUser) : []}
+            menuLabel={selectedUser ? t("users.actionsFor", { name: selectedUser.name }) : undefined}
+            />
+          </div>
         ) : null}
       </div>
 

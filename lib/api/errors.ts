@@ -30,6 +30,9 @@ function humanizeApiMessage(message: string, status: number): string {
   }
   if (normalized.includes("not found")) return "The requested record could not be found.";
   if (normalized.includes("invalid credentials")) return "The email or password is incorrect.";
+  if (normalized.includes("account suspended") || normalized.includes("suspended")) {
+    return "This account has been suspended. Contact support for help.";
+  }
   if (normalized.includes("forbidden")) return "You do not have permission to perform this action.";
   return message || "Request failed. Please try again.";
 }

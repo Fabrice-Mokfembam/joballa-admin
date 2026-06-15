@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 import { getInitials } from "@/lib/api/format";
 
 const SIZE_CLASSES = {
@@ -6,6 +9,16 @@ const SIZE_CLASSES = {
   md: { box: "h-16 w-16 text-base", px: 64 },
   lg: { box: "h-24 w-24 text-2xl", px: 96 },
 } as const;
+
+function isRenderablePhotoUrl(url?: string | null): url is string {
+  if (!url?.trim()) return false;
+  try {
+    const parsed = new URL(url.trim());
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
 
 export function UserAvatar({
   name,
@@ -20,8 +33,10 @@ export function UserAvatar({
 }) {
   const { box, px } = SIZE_CLASSES[size];
   const label = name.trim() || "?";
+  const [imageFailed, setImageFailed] = useState(false);
+  const showPhoto = isRenderablePhotoUrl(photoUrl) && !imageFailed;
 
-  if (photoUrl) {
+  if (showPhoto) {
     return (
       <Image
         src={photoUrl}
@@ -30,6 +45,7 @@ export function UserAvatar({
         height={px}
         className={`${box} shrink-0 rounded-full object-cover ${className}`}
         unoptimized
+        onError={() => setImageFailed(true)}
       />
     );
   }

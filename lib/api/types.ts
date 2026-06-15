@@ -362,6 +362,94 @@ export type PlatformUser = {
   lastActivityAt: string;
 };
 
+export type AdminUserWorkHistory = {
+  id: string;
+  jobTitle: string;
+  companyName: string;
+  location?: string | null;
+  startDate: string;
+  endDate?: string | null;
+  isCurrent: boolean;
+  description?: string | null;
+};
+
+export type AdminUserEducation = {
+  id: string;
+  degree?: string | null;
+  institution: string;
+  fieldOfStudy?: string | null;
+  startDate: string;
+  endDate?: string | null;
+  isCurrent: boolean;
+  description?: string | null;
+};
+
+export type AdminUserCertification = {
+  id: string;
+  name: string;
+  issuer?: string | null;
+  credentialUrl?: string | null;
+  issueDate?: string | null;
+  expiryDate?: string | null;
+  description?: string | null;
+};
+
+export type AdminUserDocument = {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  fileType: string;
+  label?: string | null;
+};
+
+export type AdminUserPaymentMethod = {
+  id: string;
+  provider: string;
+  phoneNumber: string;
+  isPrimary: boolean;
+};
+
+export type AdminUserProfileDetail = {
+  id: string;
+  profileId?: string | null;
+  name: string;
+  role: "worker" | "employer";
+  email: string;
+  phone?: string | null;
+  photoUrl?: string | null;
+  isVerified?: boolean;
+  isActive: boolean;
+  accountStatus: "active" | "suspended";
+  country?: string | null;
+  city?: string | null;
+  region?: string | null;
+  preferredLanguage?: string;
+  createdByAdmin?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  professionalTitle?: string | null;
+  shortBio?: string | null;
+  tagline?: string | null;
+  companyName?: string | null;
+  industry?: string | null;
+  website?: string | null;
+  contactPersonName?: string | null;
+  dateOfBirth?: string | null;
+  skills: string[];
+  languages: string[];
+  industries: string[];
+  preferredJobTypes: string[];
+  profileViews: number;
+  verificationStatus: string;
+  availabilityStatus?: string | null;
+  workHistories: AdminUserWorkHistory[];
+  educations: AdminUserEducation[];
+  certifications: AdminUserCertification[];
+  documents: AdminUserDocument[];
+  paymentMethods: AdminUserPaymentMethod[];
+  latestKycStatus?: string | null;
+};
+
 export type AnalyticsOverview = {
   totals: Array<{ label: string; value: string | number; note: string }>;
   departments: Array<{

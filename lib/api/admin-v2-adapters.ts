@@ -4,6 +4,7 @@ import type {
   AdminMe,
   AdminPermission,
   AdminProfile,
+  AdminUserProfileDetail,
   AuditLogListItem,
   DashboardData,
   DepartmentDetail,
@@ -205,9 +206,121 @@ export function mapUser(raw: any): PlatformUser {
     email: raw.email ?? "",
     phone: raw.phone ?? undefined,
     photoUrl: profile.photoUrl ?? raw.photoUrl ?? null,
-    status: raw.isActive ? "active" : "suspended",
+    status: raw.isActive === false || raw.accountStatus === "suspended" ? "suspended" : "active",
     joinedAt: raw.createdAt,
-    lastActivityAt: raw.createdAt,
+    lastActivityAt: raw.updatedAt ?? raw.createdAt,
+  };
+}
+
+function normalizeVerificationStatus(value: unknown): string {
+  if (value == null || value === "") return "not_submitted";
+  return String(value).toLowerCase();
+}
+
+function resolveUserDocuments(raw: any, nested: Record<string, any>): AdminUserProfileDetail["documents"] {
+  const existing = raw.documents ?? nested.documents;
+  if (Array.isArray(existing) && existing.length > 0) return existing;
+
+  const documents: AdminUserProfileDetail["documents"] = [];
+  const cvUrl = nested.cvUrl ?? raw.cvUrl;
+  if (typeof cvUrl === "string" && cvUrl.trim()) {
+    documents.push({
+      id: "cv-upload",
+      fileName: "resume",
+      fileUrl: cvUrl,
+      fileType: "application/pdf",
+      label: "Resume",
+    });
+  }
+  const generatedCvUrl = nested.generatedCvUrl ?? raw.generatedCvUrl;
+  if (typeof generatedCvUrl === "string" && generatedCvUrl.trim() && generatedCvUrl !== cvUrl) {
+    documents.push({
+      id: String(nested.generatedCvDocumentId ?? "generated-cv"),
+      fileName: String(nested.generatedCvFileName ?? "generated-cv.pdf"),
+      fileUrl: generatedCvUrl,
+      fileType: "application/pdf",
+      label: "Generated CV",
+    });
+  }
+  return documents;
+}
+
+function isNormalizedUserDetail(raw: any): raw is AdminUserProfileDetail {
+  return (
+    typeof raw?.name === "string" &&
+    raw.verificationStatus !== undefined &&
+    Array.isArray(raw.workHistories) &&
+    Array.isArray(raw.educations) &&
+    Array.isArray(raw.certifications) &&
+    Array.isArray(raw.documents) &&
+    Array.isArray(raw.paymentMethods) &&
+    !raw.profileType
+  );
+}
+
+export function mapUserDetail(raw: any): AdminUserProfileDetail {
+  if (isNormalizedUserDetail(raw)) return raw;
+
+  const nested = raw.profile && typeof raw.profile === "object" ? raw.profile : {};
+  const roleValue = String(raw.role ?? raw.profileType ?? "worker").toLowerCase();
+  const role: AdminUserProfileDetail["role"] = roleValue === "employer" ? "employer" : "worker";
+  const isWorker = role === "worker";
+
+  const name =
+    raw.name ??
+    raw.fullName ??
+    (isWorker ? nested.fullName : null) ??
+    nested.companyName ??
+    raw.email ??
+    raw.phone ??
+    "Unknown user";
+
+  const verificationStatus = normalizeVerificationStatus(
+    raw.verificationStatus ?? nested.verificationStatus,
+  );
+
+  return {
+    id: raw.id,
+    profileId: raw.profileId ?? nested.id ?? null,
+    name,
+    role,
+    email: raw.email ?? "",
+    phone: raw.phone ?? null,
+    photoUrl: raw.photoUrl ?? nested.photoUrl ?? nested.companyLogoUrl ?? null,
+    isVerified: Boolean(raw.isVerified),
+    isActive: raw.isActive !== false && raw.accountStatus !== "suspended",
+    accountStatus:
+      raw.accountStatus === "suspended" || raw.isActive === false ? "suspended" : "active",
+    country: raw.country ?? nested.country ?? null,
+    city: raw.city ?? nested.city ?? null,
+    region: raw.region ?? nested.region ?? null,
+    preferredLanguage: raw.preferredLanguage,
+    createdByAdmin: raw.createdByAdmin ?? null,
+    createdAt: raw.createdAt ?? raw.memberSince ?? nested.createdAt ?? new Date().toISOString(),
+    updatedAt: raw.updatedAt ?? nested.updatedAt ?? raw.createdAt ?? raw.memberSince ?? nested.createdAt,
+    professionalTitle: isWorker
+      ? (raw.professionalTitle ?? nested.professionalTitle ?? null)
+      : (raw.professionalTitle ?? nested.contactPersonTitle ?? raw.position ?? null),
+    shortBio: raw.shortBio ?? nested.shortBio ?? nested.description ?? null,
+    tagline: raw.tagline ?? nested.tagline ?? null,
+    companyName: raw.companyName ?? nested.companyName ?? raw.organization ?? null,
+    industry: raw.industry ?? nested.industry ?? null,
+    website: raw.website ?? nested.website ?? null,
+    contactPersonName: raw.contactPersonName ?? nested.contactPersonName ?? null,
+    dateOfBirth: raw.dateOfBirth ?? nested.dateOfBirth ?? null,
+    skills: raw.skills ?? nested.skills ?? [],
+    languages: raw.languages ?? nested.languages ?? [],
+    industries: raw.industries ?? nested.preferredJobCategories ?? nested.industries ?? [],
+    preferredJobTypes: raw.preferredJobTypes ?? nested.preferredJobTypes ?? [],
+    profileViews: raw.profileViews ?? nested.profileViews ?? 0,
+    verificationStatus,
+    availabilityStatus: raw.availabilityStatus ?? nested.availabilityStatus ?? null,
+    workHistories: raw.workHistories ?? nested.workHistories ?? [],
+    educations: raw.educations ?? nested.educations ?? [],
+    certifications: raw.certifications ?? nested.certifications ?? [],
+    documents: resolveUserDocuments(raw, nested),
+    paymentMethods: raw.paymentMethods ?? nested.paymentMethods ?? [],
+    latestKycStatus: raw.latestKycStatus ?? null,
   };
 }
 

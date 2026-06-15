@@ -49,20 +49,20 @@ export function LoginForm() {
               <span className="mb-2 block text-sm font-medium text-[var(--joballa-muted)]">{t("login.email")}</span>
               <span className={inputWrapClass}>
                 <Mail size={19} className="text-[var(--joballa-primary)]" />
-                <input type="email" required autoComplete="username" value={identifier} maxLength={INPUT_MAX_LENGTH.identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder={t("login.emailPlaceholder")} className="w-full bg-transparent text-base outline-none placeholder:text-[var(--joballa-muted)]" />
+                <input type="email" required autoComplete="username" value={identifier} maxLength={INPUT_MAX_LENGTH.identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder={t("login.emailPlaceholder")} className="w-full bg-transparent text-base outline-none placeholder:text-[var(--joballa-muted)]" data-testid="admin-login-identifier" />
               </span>
             </label>
             <label className="block">
               <span className="mb-2 block text-sm font-medium text-[var(--joballa-muted)]">{t("login.password")}</span>
               <span className={inputWrapClass}>
                 <LockKeyhole size={19} className="text-[var(--joballa-primary)]" />
-                <input type={showPassword ? "text" : "password"} required autoComplete="current-password" value={password} maxLength={INPUT_MAX_LENGTH.password} onChange={(event) => setPassword(event.target.value)} placeholder={t("login.passwordPlaceholder")} className="w-full bg-transparent text-base outline-none placeholder:text-[var(--joballa-muted)]" />
+                <input type={showPassword ? "text" : "password"} required autoComplete="current-password" value={password} maxLength={INPUT_MAX_LENGTH.password} onChange={(event) => setPassword(event.target.value)} placeholder={t("login.passwordPlaceholder")} className="w-full bg-transparent text-base outline-none placeholder:text-[var(--joballa-muted)]" data-testid="admin-login-password" />
                 <button type="button" aria-label={showPassword ? t("login.hidePassword") : t("login.showPassword")} className="text-[var(--joballa-muted)]" onClick={() => setShowPassword((value) => !value)}>
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </span>
             </label>
-            <button type="submit" disabled={loading} className="h-14 w-full rounded-[12px] bg-[var(--joballa-primary)] text-base font-semibold text-white transition hover:opacity-90 disabled:opacity-60">
+            <button type="submit" disabled={loading} className="h-14 w-full rounded-[12px] bg-[var(--joballa-primary)] text-base font-semibold text-white transition hover:opacity-90 disabled:opacity-60" data-testid="admin-login-submit">
               {loading ? t("login.signingIn") : t("login.signIn")}
             </button>
           </form>

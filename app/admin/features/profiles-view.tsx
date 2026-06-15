@@ -15,14 +15,15 @@ import { profilesApi } from "@/lib/api/admin";
 import type { AdminProfile } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useAdminAction } from "@/lib/hooks/use-admin-action";
-import { isAsyncRefreshing, isInitialAsyncLoad, useAsyncData, useMutation } from "@/lib/hooks/use-async";
+import { isAsyncRefreshing, isInitialAsyncLoad, useAsyncData, useMutation, clearAsyncDataCache } from "@/lib/hooks/use-async";
 import { INPUT_MAX_LENGTH } from "@/lib/constants/input-limits";
 import { useTranslation } from "@/lib/i18n";
 import { useTranslatedFormat } from "@/lib/i18n/use-translated-format";
 import { FilterSelect, MoreMenu, PaginationBar, StatusFilterPills, UserAvatar } from "../ui";
 import { ProfileCardGridSkeleton } from "../ui/skeletons";
 import { AccessDeniedState, EmptyState, ErrorState, LoadingButton } from "../ui/states";
-import { UserDetailPanel, type UserDetailFields } from "./user-detail-panel";
+import { UserDetailPanel } from "./user-detail-panel";
+import { adminUserDetailToFields } from "./user-detail-fields";
 
 const PAGE_SIZE = 20;
 const ROLE_FILTER_KEYS = ["common.all", "common.worker", "common.employer"] as const;
@@ -71,50 +72,6 @@ function getAccountStatus(profile: AdminProfile): "Active" | "Suspended" {
     return profile.accountStatus === "suspended" ? "Suspended" : "Active";
   }
   return ["suspended", "inactive", "disabled"].includes(profile.status.toLowerCase()) ? "Suspended" : "Active";
-}
-
-function profileToDetailFields(
-  profile: AdminProfile,
-  t: (key: string, vars?: Record<string, string>) => string,
-  formatRoleLabel: (role: string) => string,
-): UserDetailFields {
-  const accountStatus = getAccountStatus(profile);
-  return {
-    id: profile.id,
-    name: profile.name,
-    email: profile.email,
-    role: profile.role,
-    status: profile.status,
-    phone: profile.phone,
-    photoUrl: profile.photoUrl,
-    headline: profile.position || profile.companyName || formatRoleLabel(profile.role),
-    location: [profile.city, profile.region, profile.country].filter(Boolean).join(", ") || null,
-    isVerified: profile.isVerified,
-    badges: [
-      {
-        label: accountStatus === "Suspended" ? t("common.suspended") : t("common.active"),
-        className:
-          accountStatus === "Suspended"
-            ? "bg-[var(--joballa-danger-bg)] text-[var(--joballa-danger-fg)]"
-            : "bg-[var(--joballa-jade-3)] text-[var(--joballa-primary)]",
-      },
-      {
-        label: t("profiles.verification", { status: formatRoleLabel(profile.status) }),
-      },
-    ],
-    sections: [
-      profile.position ? { title: t("profiles.position"), content: profile.position } : null,
-      profile.companyName ? { title: t("profiles.organizationLabel"), content: profile.companyName } : null,
-      profile.profileViews != null
-        ? { title: t("profiles.profileViews"), content: String(profile.profileViews) }
-        : null,
-      profile.createdBy ? { title: t("profiles.createdBy"), content: profile.createdBy } : null,
-      formatProfileDate(profile.createdAt)
-        ? { title: t("profiles.createdLabel"), content: formatProfileDate(profile.createdAt) ?? "" }
-        : null,
-    ].filter((section): section is { title: string; content: string } => section !== null),
-    bio: profile.shortBio,
-  };
 }
 
 export function ProfilesView() {
@@ -196,6 +153,15 @@ export function ProfilesView() {
   });
   const selectedProfile = profiles.find((profile) => profile.id === selectedProfileId) ?? null;
 
+  const { data: selectedProfileDetail, loading: detailLoading } = useAsyncData(
+    async () => {
+      if (!selectedProfileId) return null;
+      return profilesApi.get(selectedProfileId);
+    },
+    [selectedProfileId],
+    { cacheKey: selectedProfileId ? `profiles:detail:${selectedProfileId}` : undefined },
+  );
+
   useEffect(() => {
     (window as Window & { __adminSelectedProfileUserId?: string | null }).__adminSelectedProfileUserId =
       selectedProfile?.userId ?? null;
@@ -216,6 +182,11 @@ export function ProfilesView() {
     return <AccessDeniedState description={t("profiles.accessDenied")} />;
   }
 
+  function refreshProfiles() {
+    clearAsyncDataCache("profiles:detail:");
+    reload();
+  }
+
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!form.name.trim() || !form.email.trim() || !form.phone.trim() || !form.region || !form.city) return;
@@ -224,7 +195,7 @@ export function ProfilesView() {
       onSuccess: () => {
         setIsCreateOpen(false);
         setForm(EMPTY_FORM);
-        reload();
+        refreshProfiles();
       },
     });
   }
@@ -234,7 +205,7 @@ export function ProfilesView() {
       success: t("profiles.deletedSuccess"),
       onSuccess: () => {
         setSelectedProfileId(null);
-        reload();
+        refreshProfiles();
       },
     });
   }
@@ -242,14 +213,14 @@ export function ProfilesView() {
   async function handleSuspend(profile: AdminProfile) {
     return perform(() => suspendProfile(profile.id), {
       success: t("profiles.suspendedSuccess"),
-      onSuccess: reload,
+      onSuccess: refreshProfiles,
     });
   }
 
   async function handleActivate(profile: AdminProfile) {
     return perform(() => activateProfile(profile.id), {
       success: t("profiles.activatedSuccess"),
-      onSuccess: reload,
+      onSuccess: refreshProfiles,
     });
   }
 
@@ -260,7 +231,7 @@ export function ProfilesView() {
       success: t("profiles.updatedSuccess"),
       onSuccess: () => {
         setEditingProfile(null);
-        reload();
+        refreshProfiles();
       },
     });
   }
@@ -400,8 +371,8 @@ export function ProfilesView() {
         </div>
       ) : null}
 
-      <div className={["grid gap-6", selectedProfile ? "xl:grid-cols-[minmax(320px,500px)_minmax(0,1fr)] xl:items-start" : ""].join(" ")}>
-        <div aria-busy={isRefreshing} className={["grid gap-4", selectedProfile ? "xl:max-w-[500px]" : "w-full md:grid-cols-2 xl:grid-cols-3", isRefreshing ? "pointer-events-none opacity-60" : ""].join(" ")}>
+      <div className={["grid gap-6", selectedProfileId ? "xl:grid-cols-[minmax(320px,500px)_minmax(0,1fr)] xl:items-stretch" : ""].join(" ")}>
+        <div aria-busy={isRefreshing} className={["grid gap-4", selectedProfileId ? "xl:max-w-[500px]" : "w-full md:grid-cols-2 xl:grid-cols-3", isRefreshing ? "pointer-events-none opacity-60" : ""].join(" ")}>
           {visibleProfiles.length === 0 && !isRefreshing ? (
             <div className="col-span-full"><EmptyState title={t("profiles.noProfiles")} description={t("profiles.noProfilesDescription")} /></div>
           ) : (
@@ -462,15 +433,25 @@ export function ProfilesView() {
           )}
         </div>
 
-        {selectedProfile ? (
-          <UserDetailPanel
-            user={isRefreshing ? null : profileToDetailFields(selectedProfile, (key, vars) => t(key as Parameters<typeof t>[0], vars), formatRoleLabel)}
-            loading={isRefreshing}
-            onClose={() => setSelectedProfileId(null)}
-            menuItems={getProfileActions(selectedProfile)}
-            menuLabel={t("profiles.detailActions", { name: selectedProfile.name })}
-            closeLabel={t("profiles.closeDetails")}
-          />
+        {selectedProfileId ? (
+          <div className="min-w-0 w-full">
+            <UserDetailPanel
+              user={
+                selectedProfileDetail
+                  ? adminUserDetailToFields(
+                      selectedProfileDetail,
+                      (key, vars) => t(key as Parameters<typeof t>[0], vars),
+                      formatRoleLabel,
+                    )
+                  : null
+              }
+              loading={detailLoading}
+              onClose={() => setSelectedProfileId(null)}
+              menuItems={selectedProfile ? getProfileActions(selectedProfile) : []}
+              menuLabel={selectedProfile ? t("profiles.detailActions", { name: selectedProfile.name }) : undefined}
+              closeLabel={t("profiles.closeDetails")}
+            />
+          </div>
         ) : null}
       </div>
 

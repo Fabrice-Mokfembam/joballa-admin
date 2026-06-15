@@ -25,11 +25,13 @@ import {
   mapProfile,
   mapSession,
   mapUser,
+  mapUserDetail,
 } from "./admin-v2-adapters";
 import type {
   AdminPermission,
   AdminListItem,
   AdminProfile,
+  AdminUserProfileDetail,
   AdminRole,
   DashboardAnalyticsData,
   DashboardAnalyticsRange,
@@ -303,7 +305,7 @@ export const usersApi = {
     country: params.country,
     city: params.city,
   } : undefined), mapUser),
-  get: async (userId: string) => mapUser(await apiGet<any>(`/admin/users/${userId}`)),
+  get: async (userId: string) => mapUserDetail(await apiGet<any>(`/admin/users/${userId}`)),
   suspend: (userId: string) => apiPatch(`/admin/users/${userId}/suspend`),
   reactivate: (userId: string) => apiPatch(`/admin/users/${userId}/activate`),
   delete: (userId: string) => apiDelete(`/admin/users/${userId}`),
@@ -324,8 +326,8 @@ export const profilesApi = {
       } : undefined),
       mapProfile
     ),
-  get: async (profileId: string): Promise<AdminProfile> =>
-    mapProfile(await apiGet<any>(`/admin/profiles/${profileId}`)),
+  get: async (profileId: string): Promise<AdminUserProfileDetail> =>
+    mapUserDetail(await apiGet<any>(`/admin/profiles/${profileId}`)),
   create: async (body: {
     profileType: "worker" | "employer";
     fullName: string;

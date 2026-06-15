@@ -1,5 +1,6 @@
 "use client";
 
+import { USER_DETAIL_PANEL_ASIDE_CLASS } from "../features/user-detail-panel-layout";
 import { SkeletonBar } from "./states";
 
 export function StatGridSkeleton() {
@@ -353,40 +354,43 @@ export function JobDetailPanelSkeleton() {
 
 export function ProfileDetailPanelSkeleton() {
   return (
-    <aside className="rounded-[20px] border border-[var(--joballa-border)] bg-[var(--joballa-page-tint)] p-4">
-      <section className="rounded-[16px] border border-[var(--joballa-border)] bg-[var(--joballa-card)] p-5">
+    <aside className={USER_DETAIL_PANEL_ASIDE_CLASS}>
+      <section className="rounded-[14px] border border-[var(--joballa-border)] bg-[var(--joballa-card)] px-5 py-6">
         <div className="mb-5 flex justify-end gap-2">
           <SkeletonBar className="h-10 w-10 rounded-full" />
           <SkeletonBar className="h-10 w-10 rounded-full" />
         </div>
-        <div className="flex flex-col gap-5 border-b border-[var(--joballa-border)] pb-8 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-6">
-            <SkeletonBar className="h-24 w-24 shrink-0 rounded-full" />
+        <div className="flex flex-col gap-4 border-b border-[var(--joballa-border)] pb-5">
+          <div className="flex min-w-0 items-start gap-4">
+            <SkeletonBar className="h-20 w-20 shrink-0 rounded-full" />
             <div className="min-w-0 flex-1">
-              <SkeletonBar className="h-7 w-48" />
-              <SkeletonBar className="mt-2 h-3 w-36" />
-              <div className="mt-3 flex gap-2">
-                <SkeletonBar className="h-7 w-20 rounded-full" />
-                <SkeletonBar className="h-7 w-24 rounded-full" />
+              <SkeletonBar className="h-6 w-40" />
+              <SkeletonBar className="mt-2 h-3 w-28" />
+              <div className="mt-2 flex gap-1.5">
+                <SkeletonBar className="h-6 w-16 rounded-full" />
+                <SkeletonBar className="h-6 w-28 rounded-full" />
               </div>
             </div>
           </div>
-          <div className="hidden w-[180px] shrink-0 space-y-2 sm:block">
-            <SkeletonBar className="ml-auto h-3 w-32" />
-            <SkeletonBar className="ml-auto h-3 w-28" />
-            <SkeletonBar className="ml-auto h-3 w-36" />
+          <div className="space-y-2">
+            <SkeletonBar className="h-3 w-36" />
+            <SkeletonBar className="h-3 w-28" />
+            <SkeletonBar className="h-3 w-44" />
           </div>
         </div>
-        {Array.from({ length: 4 }).map((_, index) => (
-          <div
-            key={index}
-            className="flex flex-col gap-4 border-b border-[var(--joballa-border)] py-8 last:border-b-0 sm:flex-row sm:items-start sm:gap-16"
-          >
-            <SkeletonBar className="h-4 w-24 shrink-0" />
-            <div className="min-w-0 flex-1 space-y-2">
-              <SkeletonBar className="h-4 w-full" />
-              <SkeletonBar className="h-4 w-4/5" />
-            </div>
+        {[
+          "Summary",
+          "Skills",
+          "Work",
+          "Education",
+          "Certs",
+          "Docs",
+          "Account",
+        ].map((section) => (
+          <div key={section} className="grid gap-2.5 border-b border-[var(--joballa-border)] py-5 last:border-b-0">
+            <SkeletonBar className="h-3 w-24" />
+            <SkeletonBar className="h-4 w-full" />
+            <SkeletonBar className="h-4 w-5/6" />
           </div>
         ))}
       </section>
